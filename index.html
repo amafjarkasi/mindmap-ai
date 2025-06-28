@@ -3,15 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Mind Map Generator</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>AI Mind Map Generator - Enhanced</title>
+    <meta name="description" content="Create AI-powered mind maps with advanced features including cloud storage, collaboration, and multiple export formats">
+    <meta name="keywords" content="mindmap, ai, openai, visualization, collaboration, productivity">
+
+    <!-- Favicon and app icons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- PWA manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#667eea">
+
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://unpkg.com/gojs@3.0.11/release/go.js" as="script">
+
+    <!-- External dependencies -->
     <script src="https://unpkg.com/gojs@3.0.11/release/go.js"></script>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🧠 AI Mind Map Generator</h1>
-            <p>Create detailed mind maps from your ideas using AI</p>
+            <div class="header-left">
+                <h1>🧠 AI Mind Map Generator</h1>
+                <span class="version-badge">Enhanced</span>
+            </div>
+            <div class="user-profile">
+                <button class="sign-in-btn" onclick="app.showAuthModal()">Sign In</button>
+            </div>
         </header>
         
         <div class="main-content">
@@ -82,7 +101,27 @@ Examples:
                         <button id="settingsBtn" class="control-btn" title="Settings">
                             <span class="icon">⚙️</span>
                         </button>
+                        <button id="saveBtn" class="control-btn auth-required" title="Save Mind Map">
+                            <span class="icon">💾</span>
+                        </button>
+                        <button id="loadBtn" class="control-btn auth-required" title="Load Mind Map">
+                            <span class="icon">📂</span>
+                        </button>
+                        <button id="shareBtn" class="control-btn auth-required" title="Share">
+                            <span class="icon">🔗</span>
+                        </button>
+                        <button id="templateBtn" class="control-btn" title="Templates">
+                            <span class="icon">📋</span>
+                        </button>
                     </div>
+                </div>
+
+                <!-- Search bar -->
+                <div class="search-container auth-required">
+                    <input type="text" id="searchInput" placeholder="Search mind maps..." class="search-input">
+                    <button id="searchBtn" class="search-btn">
+                        <span class="icon">🔍</span>
+                    </button>
                 </div>
                 <div id="mindmapDiv" class="mindmap-container">
                     <div class="mindmap-placeholder">
@@ -109,11 +148,27 @@ Examples:
                 </div>
             </div>
         </div>
-        
+
+        <!-- Loading overlay -->
         <div id="loadingOverlay" class="loading-overlay hidden">
             <div class="loading-content">
                 <div class="spinner"></div>
                 <p>Generating mind map...</p>
+            </div>
+        </div>
+
+        <!-- Notification container -->
+        <div class="notification-container"></div>
+
+        <!-- Auto-save indicator -->
+        <div class="auto-save-indicator"></div>
+
+        <!-- Sign-in prompt for unauthenticated users -->
+        <div class="sign-in-prompt">
+            <div class="prompt-content">
+                <h3>Sign in to unlock all features</h3>
+                <p>Save your mind maps, collaborate with others, and access advanced features.</p>
+                <button onclick="app.showAuthModal()">Sign In Now</button>
             </div>
         </div>
         
@@ -243,6 +298,15 @@ Examples:
         </div>
     </div>
     
-    <script src="script.js"></script>
+    <!-- Environment variables for development -->
+    <script>
+        // Set up environment variables for development
+        if (!window.process) {
+            window.process = { env: {} };
+        }
+    </script>
+
+    <!-- Main application script -->
+    <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

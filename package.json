@@ -4,16 +4,23 @@
   "description": "A powerful web application that uses OpenAI's GPT and GoJS to create detailed, interactive mind maps from user input",
   "main": "index.html",
   "scripts": {
-    "start": "python -m http.server 8000",
-    "serve": "npx serve .",
-    "dev": "npx live-server .",
-    "build": "node build.js",
-    "deploy:netlify": "netlify deploy --prod",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite preview",
+    "start": "vite",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.js",
+    "format": "prettier --write src/**/*.{ts,js,css,html}",
+    "deploy:netlify": "npm run build && netlify deploy --prod",
     "deploy:vercel": "npm run build && vercel --prod",
     "docker:build": "docker build -t ai-mindmap-generator .",
     "docker:run": "docker run -p 3000:80 ai-mindmap-generator",
     "docker:compose": "docker-compose up -d",
-    "test": "echo 'Opening application for testing...' && start index.html"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage --watchAll=false"
   },
   "keywords": [
     "mindmap",
@@ -27,14 +34,38 @@
   ],
   "author": "AI Mind Map Generator",
   "license": "MIT",
-  "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.0.7",
+    "@typescript-eslint/eslint-plugin": "^8.35.0",
+    "@typescript-eslint/parser": "^8.35.0",
+    "@vitejs/plugin-legacy": "^7.0.0",
+    "eslint": "^9.30.0",
+    "jest": "^30.0.3",
+    "jest-environment-jsdom": "^30.0.2",
+    "jsdom": "^26.1.0",
+    "prettier": "^3.6.2",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.0"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/ai-mindmap-generator.git"
+    "url": "git+https://github.com/your-username/ai-mindmap-generator.git"
   },
   "bugs": {
     "url": "https://github.com/your-username/ai-mindmap-generator/issues"
   },
-  "homepage": "https://github.com/your-username/ai-mindmap-generator#readme"
+  "homepage": "https://github.com/your-username/ai-mindmap-generator#readme",
+  "dependencies": {
+    "chart.js": "^4.5.0",
+    "firebase": "^11.9.1",
+    "fuse.js": "^7.1.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.1",
+    "socket.io-client": "^4.8.1",
+    "workbox-window": "^7.3.0"
+  }
 }

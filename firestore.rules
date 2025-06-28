@@ -1,0 +1,171 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read and write their own user document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Mind maps access control
+    match /mindmaps/{mindMapId} {
+      // Allow read if:
+      // - User is the author
+      // - Mind map is public
+      // - User is a collaborator
+      allow read: if request.auth != null && (
+        resource.data.metadata.author == request.auth.uid ||
+        resource.data.metadata.isPublic == true ||
+        request.auth.uid in resource.data.metadata.collaborators[].userId
+      );
+      
+      // Allow write if:
+      // - User is the author
+      // - User is a collaborator with editor or admin role
+      allow write: if request.auth != null && (
+        resource.data.metadata.author == request.auth.uid ||
+        (request.auth.uid in resource.data.metadata.collaborators[].userId &&
+         getCollaboratorRole(resource.data.metadata.collaborators, request.auth.uid) in ['editor', 'admin'])
+      );
+      
+      // Allow create if user is authenticated
+      allow create: if request.auth != null && 
+        request.resource.data.metadata.author == request.auth.uid;
+      
+      // Allow delete only if user is the author
+      allow delete: if request.auth != null && 
+        resource.data.metadata.author == request.auth.uid;
+    }
+    
+    // Templates access control
+    match /templates/{templateId} {
+      // Allow read for all authenticated users
+      allow read: if request.auth != null;
+      
+      // Allow write only for template author
+      allow write: if request.auth != null && (
+        resource.data.author == request.auth.uid ||
+        !exists(/databases/$(database)/documents/templates/$(templateId))
+      );
+      
+      // Allow create for authenticated users
+      allow create: if request.auth != null && 
+        request.resource.data.author == request.auth.uid;
+      
+      // Allow delete only for template author
+      allow delete: if request.auth != null && 
+        resource.data.author == request.auth.uid;
+    }
+    
+    // Comments access control
+    match /comments/{commentId} {
+      // Allow read if user has access to the associated mind map
+      allow read: if request.auth != null && 
+        canAccessMindMap(resource.data.mindMapId);
+      
+      // Allow write only for comment author
+      allow write: if request.auth != null && 
+        resource.data.authorId == request.auth.uid;
+      
+      // Allow create if user has access to the mind map
+      allow create: if request.auth != null && 
+        request.resource.data.authorId == request.auth.uid &&
+        canAccessMindMap(request.resource.data.mindMapId);
+      
+      // Allow delete only for comment author
+      allow delete: if request.auth != null && 
+        resource.data.authorId == request.auth.uid;
+    }
+    
+    // Presence tracking for collaboration
+    match /presence/{presenceId} {
+      // Allow read for all authenticated users
+      allow read: if request.auth != null;
+      
+      // Allow write only for the user's own presence
+      allow write: if request.auth != null && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // Allow create for authenticated users
+      allow create: if request.auth != null && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // Allow delete only for the user's own presence
+      allow delete: if request.auth != null && 
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // Analytics events (write-only for users, read for admins)
+    match /analytics_events/{eventId} {
+      // No read access for regular users
+      allow read: if false;
+      
+      // Allow create for authenticated users
+      allow create: if request.auth != null && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // No update or delete
+      allow update, delete: if false;
+    }
+    
+    // Analytics sessions (write-only for users, read for admins)
+    match /analytics_sessions/{sessionId} {
+      // No read access for regular users
+      allow read: if false;
+      
+      // Allow create and update for authenticated users
+      allow create, update: if request.auth != null && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // No delete
+      allow delete: if false;
+    }
+    
+    // Helper functions
+    function getCollaboratorRole(collaborators, userId) {
+      return collaborators.where('userId', '==', userId)[0].role;
+    }
+    
+    function canAccessMindMap(mindMapId) {
+      let mindMap = get(/databases/$(database)/documents/mindmaps/$(mindMapId));
+      return mindMap.data.metadata.author == request.auth.uid ||
+             mindMap.data.metadata.isPublic == true ||
+             request.auth.uid in mindMap.data.metadata.collaborators[].userId;
+    }
+    
+    // Validation functions
+    function isValidMindMapData(data) {
+      return data.keys().hasAll(['title', 'nodes', 'metadata']) &&
+             data.title is string &&
+             data.title.size() > 0 &&
+             data.title.size() <= 200 &&
+             data.nodes is list &&
+             data.nodes.size() <= 1000 &&
+             data.metadata.keys().hasAll(['created', 'modified', 'author', 'version']) &&
+             data.metadata.author is string &&
+             data.metadata.version is number &&
+             data.metadata.version >= 1;
+    }
+    
+    function isValidTemplateData(data) {
+      return data.keys().hasAll(['name', 'description', 'category', 'structure']) &&
+             data.name is string &&
+             data.name.size() > 0 &&
+             data.name.size() <= 100 &&
+             data.description is string &&
+             data.description.size() <= 500 &&
+             data.category is string &&
+             data.structure is list &&
+             data.structure.size() <= 100;
+    }
+    
+    function isValidCommentData(data) {
+      return data.keys().hasAll(['content', 'mindMapId', 'nodeId', 'authorId']) &&
+             data.content is string &&
+             data.content.size() > 0 &&
+             data.content.size() <= 1000 &&
+             data.mindMapId is string &&
+             data.nodeId is string &&
+             data.authorId is string;
+    }
+  }
+}
