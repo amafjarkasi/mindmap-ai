@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Mind Map Generator - Demo</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/gojs@3.0.11/release/go.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            min-height: 100vh;
+            background-attachment: fixed;
+        }
+        
+        .demo-container {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .demo-section {
+            margin-bottom: 4rem;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 16px;
+            padding: 3rem;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .demo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+            gap: 2rem;
+        }
+        
+        .demo-title-section {
+            flex: 1;
+        }
+        
+        .demo-title {
+            color: #2d3748;
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0 0 0.75rem 0;
+            line-height: 1.2;
+        }
+        
+        .demo-subtitle {
+            color: #667eea;
+            font-size: 1rem;
+            font-weight: 500;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .popout-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            white-space: nowrap;
+            min-height: 52px;
+        }
+        
+        .popout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+            background: linear-gradient(135deg, #5a6fd8 0%, #6b46c1 100%);
+        }
+        
+        .popout-icon {
+            font-size: 1rem;
+            line-height: 1;
+        }
+        
+        .popout-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        /* Modal Styles */
+        .mindmap-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .mindmap-modal.hidden {
+            display: none;
+        }
+        
+        .modal-content-fullscreen {
+            background: white;
+            border-radius: 12px;
+            width: 95vw;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+        
+        .modal-header-fullscreen {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .modal-title-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .modal-title {
+            color: #4a5568;
+            font-size: 1.25rem;
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .modal-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .modal-control-btn {
+            padding: 0.5rem;
+            background: #f7fafc;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 32px;
+        }
+        
+        .modal-control-btn:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+            transform: translateY(-1px);
+        }
+        
+        .close-modal-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #718096;
+            padding: 0.25rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .close-modal-btn:hover {
+            background: #edf2f7;
+            color: #4a5568;
+        }
+        
+        .modal-mindmap-container {
+            flex: 1;
+            background: #f8fafc;
+            border-radius: 0 0 12px 12px;
+            overflow: hidden;
+        }
+        
+        .demo-mindmap {
+            height: 400px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #f8fafc;
+            margin-top: 1rem;
+        }
+        
+        .demo-description {
+            color: #4a5568;
+            margin-bottom: 2rem;
+            line-height: 1.7;
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+        
+        .demo-mindmap {
+            height: 450px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: #ffffff;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.95);
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 12px;
+            margin-bottom: 3rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .back-link:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        /* Add responsive design */
+        @media (max-width: 768px) {
+            .demo-container {
+                padding: 1rem;
+            }
+            
+            .demo-section {
+                padding: 2rem;
+                margin-bottom: 2rem;
+            }
+            
+            .demo-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .demo-title {
+                font-size: 1.5rem;
+            }
+            
+            .popout-btn {
+                align-self: flex-start;
+            }
+            
+            .demo-mindmap {
+                height: 350px;
+            }
+        }
+        
+        /* Tooltip Styles */
+        .node-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            max-width: 250px;
+            z-index: 4000;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transform: translateY(-100%);
+            margin-top: -8px;
+        }
+        
+        .node-tooltip.hidden {
+            display: none;
+        }
+        
+        .tooltip-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #90cdf4;
+        }
+        
+        .tooltip-description {
+            line-height: 1.4;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tooltip-level {
+            font-size: 0.75rem;
+            color: #cbd5e0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧠 AI Mind Map Generator - Demo</h1>
+            <p>Examples of mind maps that can be generated by the AI</p>
+        </header>
+        
+        <div class="demo-container">
+            <a href="index.html" class="back-link">← Back to Generator</a>
+            
+            <div class="demo-section">
+                <div class="demo-header">
+                    <div class="demo-title-section">
+                        <p class="demo-subtitle">AI Technology Showcase</p>
+                        <h2 class="demo-title">Artificial Intelligence Ecosystem</h2>
+                    </div>
+                    <button class="popout-btn" onclick="openModal('demo1', artificialIntelligenceData, 'Artificial Intelligence Ecosystem')" title="Open in fullscreen">
+                        <span class="popout-icon">🔍</span>
+                        <span class="popout-text">View Full</span>
+                    </button>
+                </div>
+                <p class="demo-description">
+                    A comprehensive exploration of artificial intelligence covering machine learning, natural language processing, 
+                    computer vision, robotics, and expert systems. This mind map demonstrates deep hierarchical organization 
+                    with 26 interconnected nodes across 4 levels of detail.
+                </p>
+                <div id="demo1" class="demo-mindmap"></div>
+            </div>
+            
+            <div class="demo-section">
+                <div class="demo-header">
+                    <div class="demo-title-section">
+                        <p class="demo-subtitle">Distributed Ledger Technology</p>
+                        <h2 class="demo-title">Blockchain Technology Deep Dive</h2>
+                    </div>
+                    <button class="popout-btn" onclick="openModal('demo2', blockchainTechnologyData, 'Blockchain Technology Deep Dive')" title="Open in fullscreen">
+                        <span class="popout-icon">🔍</span>
+                        <span class="popout-text">View Full</span>
+                    </button>
+                </div>
+                <p class="demo-description">
+                    An advanced technical mind map covering blockchain fundamentals, consensus mechanisms, cryptocurrencies, 
+                    smart contracts, DeFi applications, and enterprise use cases. Features 36 nodes with detailed technical 
+                    specifications and real-world applications.
+                </p>
+                <div id="demo2" class="demo-mindmap"></div>
+            </div>
+            
+            <div class="demo-section">
+                <div class="demo-header">
+                    <div class="demo-title-section">
+                        <p class="demo-subtitle">Urban Development Framework</p>
+                        <h2 class="demo-title">Sustainable City Planning</h2>
+                    </div>
+                    <button class="popout-btn" onclick="openModal('demo3', sustainableCityPlanningData, 'Sustainable City Planning Framework')" title="Open in fullscreen">
+                        <span class="popout-icon">🔍</span>
+                        <span class="popout-text">View Full</span>
+                    </button>
+                </div>
+                <p class="demo-description">
+                    A comprehensive urban planning mind map covering green infrastructure, transportation systems, energy management, 
+                    water systems, smart technologies, and social equity. Contains 40 nodes demonstrating complex multi-level 
+                    relationships in sustainable urban development.
+                </p>
+                <div id="demo3" class="demo-mindmap"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for fullscreen mind map -->
+    <div id="mindmapModal" class="mindmap-modal hidden">
+        <div class="modal-content-fullscreen">
+            <div class="modal-header-fullscreen">
+                <div class="modal-title-section">
+                    <h3 id="modalTitle" class="modal-title">Mind Map</h3>
+                </div>
+                <div class="modal-controls">
+                    <button class="modal-control-btn" onclick="modalZoomIn()" title="Zoom In">🔍+</button>
+                    <button class="modal-control-btn" onclick="modalZoomOut()" title="Zoom Out">🔍−</button>
+                    <button class="modal-control-btn" onclick="modalZoomFit()" title="Fit to Window">⬜</button>
+                    <button class="modal-control-btn" onclick="modalCenter()" title="Center View">⊙</button>
+                    <button class="modal-control-btn" onclick="modalAutoOrganize()" title="Auto-Organize">↻</button>
+                    <button id="closeModalBtn" class="close-modal-btn" onclick="closeModal()" title="Close">&times;</button>
+                </div>
+            </div>
+            <div id="modalMindmap" class="modal-mindmap-container"></div>
+        </div>
+    </div>
+
+    <!-- Tooltip for node information -->
+    <div id="nodeTooltip" class="node-tooltip hidden">
+        <div class="tooltip-title"></div>
+        <div class="tooltip-description"></div>
+        <div class="tooltip-level"></div>
+    </div>
+
+    <script>
+        function createDemoDiagram(containerId, data) {
+            const $ = go.GraphObject.make;
+
+            const diagram = new go.Diagram(containerId, {
+                layout: $(go.TreeLayout, {
+                    arrangement: go.TreeLayout.ArrangementVertical,
+                    angle: 0,
+                    compaction: go.TreeLayout.CompactionNone,
+                    layerSpacing: 80,
+                    layerSpacingParentOverlap: 1,
+                    nodeSpacing: 25,
+                    sorting: go.TreeLayout.SortingAscending,
+                    setsPortSpot: false,
+                    setsChildPortSpot: false
+                }),
+                "animationManager.isEnabled": false,
+                allowCopy: false,
+                allowDelete: false,
+                allowMove: true,
+                allowSelect: true,
+                hasHorizontalScrollbar: true,
+                hasVerticalScrollbar: true,
+                "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom
+            });
+
+            // Node template
+            diagram.nodeTemplate =
+                $(go.Node, "Auto",
+                    {
+                        selectable: true,
+                        isTreeExpanded: true,
+                        locationSpot: go.Spot.Center
+                    },
+                    new go.Binding("isTreeExpanded"),
+                    $(go.Shape, "RoundedRectangle",
+                        {
+                            fill: "white",
+                            stroke: "#4299e1",
+                            strokeWidth: 2,
+                            portId: "",
+                            fromLinkable: true,
+                            toLinkable: true
+                        },
+                        new go.Binding("fill", "color"),
+                        new go.Binding("stroke", "borderColor")),
+                    $(go.Panel, "Table",
+                        $(go.TextBlock,
+                            {
+                                margin: 8,
+                                font: "12px sans-serif",
+                                stroke: "#2d3748",
+                                maxSize: new go.Size(150, NaN),
+                                wrap: go.TextBlock.WrapFit,
+                                textAlign: "center"
+                            },
+                            new go.Binding("text", "text"),
+                            new go.Binding("stroke", "textColor"))
+                    ),
+                    $("TreeExpanderButton",
+                        {
+                            width: 16,
+                            height: 16,
+                            alignment: go.Spot.TopRight,
+                            alignmentFocus: go.Spot.Center
+                        })
+                );
+
+            // Link template
+            diagram.linkTemplate =
+                $(go.Link,
+                    {
+                        routing: go.Link.Orthogonal,
+                        corner: 10,
+                        fromSpot: go.Spot.RightSide,
+                        toSpot: go.Spot.LeftSide
+                    },
+                    $(go.Shape,
+                        {
+                            stroke: "#90cdf4",
+                            strokeWidth: 2
+                        }),
+                    $(go.Shape,
+                        {
+                            toArrow: "Standard",
+                            fill: "#90cdf4",
+                            stroke: null,
+                            scale: 0.6
+                        })
+                );
+
+            diagram.model = new go.TreeModel(data);
+            
+            setTimeout(() => {
+                diagram.zoomToFit();
+            }, 100);
+        }
+
+        // Advanced Demo Data
+        const artificialIntelligenceData = [
+            { key: "1", text: "Artificial Intelligence", color: "#667eea", borderColor: "#4c51bf", textColor: "#ffffff", font: "bold 16px Arial" },
+            
+            // Main Branches (Level 1)
+            { key: "2", text: "Machine Learning", parent: "1", color: "#48bb78", borderColor: "#38a169", textColor: "#ffffff", font: "bold 14px Arial" },
+            { key: "3", text: "Natural Language Processing", parent: "1", color: "#48bb78", borderColor: "#38a169", textColor: "#ffffff", font: "bold 14px Arial" },
+            { key: "4", text: "Computer Vision", parent: "1", color: "#48bb78", borderColor: "#38a169", textColor: "#ffffff", font: "bold 14px Arial" },
+            { key: "5", text: "Robotics", parent: "1", color: "#48bb78", borderColor: "#38a169", textColor: "#ffffff", font: "bold 14px Arial" },
+            { key: "6", text: "Expert Systems", parent: "1", color: "#48bb78", borderColor: "#38a169", textColor: "#ffffff", font: "bold 14px Arial" },
+            
+            // Machine Learning (Level 2)
+            { key: "7", text: "Supervised Learning", parent: "2", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "8", text: "Unsupervised Learning", parent: "2", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "9", text: "Deep Learning", parent: "2", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "10", text: "Reinforcement Learning", parent: "2", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            
+            // Deep Learning (Level 3)
+            { key: "11", text: "Neural Networks", parent: "9", color: "#9f7aea", borderColor: "#805ad5", textColor: "#ffffff", font: "12px Arial" },
+            { key: "12", text: "Convolutional Neural Networks", parent: "9", color: "#9f7aea", borderColor: "#805ad5", textColor: "#ffffff", font: "12px Arial" },
+            { key: "13", text: "Recurrent Neural Networks", parent: "9", color: "#9f7aea", borderColor: "#805ad5", textColor: "#ffffff", font: "12px Arial" },
+            { key: "14", text: "Transformers", parent: "9", color: "#9f7aea", borderColor: "#805ad5", textColor: "#ffffff", font: "12px Arial" },
+            
+            // NLP (Level 2)
+            { key: "15", text: "Text Processing", parent: "3", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "16", text: "Language Models", parent: "3", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "17", text: "Sentiment Analysis", parent: "3", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "18", text: "Machine Translation", parent: "3", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            
+            // Computer Vision (Level 2)
+            { key: "19", text: "Image Recognition", parent: "4", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "20", text: "Object Detection", parent: "4", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "21", text: "Facial Recognition", parent: "4", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "22", text: "Medical Imaging", parent: "4", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            
+            // Applications (Level 3)
+            { key: "23", text: "GPT Models", parent: "16", color: "#9f7aea", borderColor: "#805ad5", textColor: "#ffffff", font: "12px Arial" },
+            { key: "24", text: "BERT", parent: "16", color: "#9f7aea", borderColor: "#805ad5", textColor: "#ffffff", font: "12px Arial" },
+            { key: "25", text: "Autonomous Vehicles", parent: "5", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "26", text: "Industrial Automation", parent: "5", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" }
+        ];
+
+        const blockchainTechnologyData = [
+            { key: "1", text: "Blockchain Technology", color: "#667eea", borderColor: "#4c51bf", textColor: "#ffffff", font: "bold 16px Arial" },
+            
+            // Core Concepts (Level 1)
+            { key: "2", text: "Core Concepts", parent: "1", color: "#48bb78", borderColor: "#38a169", textColor: "#ffffff", font: "bold 14px Arial" },
+            { key: "3", text: "Consensus Mechanisms", parent: "1", color: "#48bb78", borderColor: "#38a169", textColor: "#ffffff", font: "bold 14px Arial" },
+            { key: "4", text: "Cryptocurrencies", parent: "1", color: "#48bb78", borderColor: "#38a169", textColor: "#ffffff", font: "bold 14px Arial" },
+            { key: "5", text: "Smart Contracts", parent: "1", color: "#48bb78", borderColor: "#38a169", textColor: "#ffffff", font: "bold 14px Arial" },
+            { key: "6", text: "DeFi Applications", parent: "1", color: "#48bb78", borderColor: "#38a169", textColor: "#ffffff", font: "bold 14px Arial" },
+            { key: "7", text: "Enterprise Use Cases", parent: "1", color: "#48bb78", borderColor: "#38a169", textColor: "#ffffff", font: "bold 14px Arial" },
+            
+            // Core Concepts (Level 2)
+            { key: "8", text: "Distributed Ledger", parent: "2", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "9", text: "Cryptographic Hashing", parent: "2", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "10", text: "Digital Signatures", parent: "2", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "11", text: "Merkle Trees", parent: "2", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "12", text: "Immutability", parent: "2", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            
+            // Consensus Mechanisms (Level 2)
+            { key: "13", text: "Proof of Work", parent: "3", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "14", text: "Proof of Stake", parent: "3", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "15", text: "Delegated Proof of Stake", parent: "3", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "16", text: "Practical Byzantine Fault Tolerance", parent: "3", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            
+            // Cryptocurrencies (Level 2)
+            { key: "17", text: "Bitcoin", parent: "4", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "18", text: "Ethereum", parent: "4", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "19", text: "Stablecoins", parent: "4", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "20", text: "Central Bank Digital Currencies", parent: "4", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            
+            // Smart Contracts (Level 2)
+            { key: "21", text: "Solidity Programming", parent: "5", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "22", text: "Gas Optimization", parent: "5", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "23", text: "Security Auditing", parent: "5", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "24", text: "Upgradeable Contracts", parent: "5", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            
+            // DeFi (Level 2)
+            { key: "25", text: "Decentralized Exchanges", parent: "6", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "26", text: "Lending Protocols", parent: "6", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "27", text: "Yield Farming", parent: "6", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "28", text: "Liquidity Mining", parent: "6", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            
+            // Enterprise (Level 2)
+            { key: "29", text: "Supply Chain Management", parent: "7", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "30", text: "Identity Management", parent: "7", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "31", text: "Healthcare Records", parent: "7", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "32", text: "Real Estate Tokenization", parent: "7", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            
+            // Level 3 Details
+            { key: "33", text: "SHA-256", parent: "9", color: "#9f7aea", borderColor: "#805ad5", textColor: "#ffffff", font: "12px Arial" },
+            { key: "34", text: "ECDSA", parent: "10", color: "#9f7aea", borderColor: "#805ad5", textColor: "#ffffff", font: "12px Arial" },
+            { key: "35", text: "Mining Pools", parent: "13", color: "#9f7aea", borderColor: "#805ad5", textColor: "#ffffff", font: "12px Arial" },
+            { key: "36", text: "Validator Nodes", parent: "14", color: "#9f7aea", borderColor: "#805ad5", textColor: "#ffffff", font: "12px Arial" }
+        ];
+
+        const sustainableCityPlanningData = [
+            { key: "1", text: "Sustainable City Planning", color: "#667eea", borderColor: "#4c51bf", textColor: "#ffffff", font: "bold 16px Arial" },
+            
+            // Main Categories (Level 1)
+            { key: "2", text: "Green Infrastructure", parent: "1", color: "#48bb78", borderColor: "#38a169", textColor: "#ffffff", font: "bold 14px Arial" },
+            { key: "3", text: "Transportation Systems", parent: "1", color: "#48bb78", borderColor: "#38a169", textColor: "#ffffff", font: "bold 14px Arial" },
+            { key: "4", text: "Energy Management", parent: "1", color: "#48bb78", borderColor: "#38a169", textColor: "#ffffff", font: "bold 14px Arial" },
+            { key: "5", text: "Water Management", parent: "1", color: "#48bb78", borderColor: "#38a169", textColor: "#ffffff", font: "bold 14px Arial" },
+            { key: "6", text: "Waste Management", parent: "1", color: "#48bb78", borderColor: "#38a169", textColor: "#ffffff", font: "bold 14px Arial" },
+            { key: "7", text: "Smart Technologies", parent: "1", color: "#48bb78", borderColor: "#38a169", textColor: "#ffffff", font: "bold 14px Arial" },
+            { key: "8", text: "Social Equity", parent: "1", color: "#48bb78", borderColor: "#38a169", textColor: "#ffffff", font: "bold 14px Arial" },
+            
+            // Green Infrastructure (Level 2)
+            { key: "9", text: "Urban Forests", parent: "2", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "10", text: "Green Roofs", parent: "2", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "11", text: "Parks & Recreation", parent: "2", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "12", text: "Green Corridors", parent: "2", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "13", text: "Permeable Surfaces", parent: "2", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            
+            // Transportation (Level 2)
+            { key: "14", text: "Public Transit", parent: "3", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "15", text: "Cycling Infrastructure", parent: "3", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "16", text: "Electric Vehicles", parent: "3", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "17", text: "Walkable Design", parent: "3", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "18", text: "Car-Free Zones", parent: "3", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            
+            // Energy Management (Level 2)
+            { key: "19", text: "Renewable Energy", parent: "4", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "20", text: "Energy Efficiency", parent: "4", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "21", text: "Smart Grid", parent: "4", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "22", text: "District Heating", parent: "4", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "23", text: "Energy Storage", parent: "4", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            
+            // Water Management (Level 2)
+            { key: "24", text: "Rainwater Harvesting", parent: "5", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "25", text: "Greywater Recycling", parent: "5", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "26", text: "Stormwater Management", parent: "5", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "27", text: "Water Treatment", parent: "5", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "28", text: "Leak Detection", parent: "5", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            
+            // Smart Technologies (Level 2)
+            { key: "29", text: "IoT Sensors", parent: "7", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "30", text: "Data Analytics", parent: "7", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "31", text: "AI Urban Planning", parent: "7", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "32", text: "Digital Twin", parent: "7", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            { key: "33", text: "Smart Lighting", parent: "7", color: "#ed8936", borderColor: "#dd6b20", textColor: "#ffffff", font: "13px Arial" },
+            
+            // Level 3 Specifics
+            { key: "34", text: "Tree Canopy Coverage", parent: "9", color: "#9f7aea", borderColor: "#805ad5", textColor: "#ffffff", font: "12px Arial" },
+            { key: "35", text: "Air Quality Improvement", parent: "9", color: "#9f7aea", borderColor: "#805ad5", textColor: "#ffffff", font: "12px Arial" },
+            { key: "36", text: "Bus Rapid Transit", parent: "14", color: "#9f7aea", borderColor: "#805ad5", textColor: "#ffffff", font: "12px Arial" },
+            { key: "37", text: "Light Rail Systems", parent: "14", color: "#9f7aea", borderColor: "#805ad5", textColor: "#ffffff", font: "12px Arial" },
+            { key: "38", text: "Charging Stations", parent: "16", color: "#9f7aea", borderColor: "#805ad5", textColor: "#ffffff", font: "12px Arial" },
+            { key: "39", text: "Battery Technology", parent: "23", color: "#9f7aea", borderColor: "#805ad5", textColor: "#ffffff", font: "12px Arial" },
+            { key: "40", text: "Predictive Maintenance", parent: "30", color: "#9f7aea", borderColor: "#805ad5", textColor: "#ffffff", font: "12px Arial" }
+        ];
+
+        // Modal functionality
+        let modalDiagram = null;
+
+        function openModal(originalId, data, title) {
+            const modal = document.getElementById('mindmapModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalContainer = document.getElementById('modalMindmap');
+            
+            // Set title
+            modalTitle.textContent = title;
+            
+            // Clear previous content
+            modalContainer.innerHTML = '';
+            
+            // Show modal
+            modal.classList.remove('hidden');
+            
+            // Create new diagram in modal
+            setTimeout(() => {
+                createModalDiagram('modalMindmap', data);
+            }, 100);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('mindmapModal');
+            modal.classList.add('hidden');
+            
+            // Clean up diagram
+            if (modalDiagram) {
+                modalDiagram.div = null;
+                modalDiagram = null;
+            }
+        }
+
+        function createModalDiagram(containerId, data) {
+            const $ = go.GraphObject.make;
+
+            // Determine optimal layout based on number of nodes and container size
+            const nodeCount = data.length;
+            let optimalLayout;
+
+            if (nodeCount > 30) {
+                // For complex diagrams with many nodes, use compact horizontal layout
+                optimalLayout = $(go.TreeLayout, {
+                    arrangement: go.TreeLayout.ArrangementHorizontal,
+                    angle: 90,
+                    compaction: go.TreeLayout.CompactionBlock,
+                    layerSpacing: 120,
+                    layerSpacingParentOverlap: 0.5,
+                    nodeSpacing: 40,
+                    sorting: go.TreeLayout.SortingForwards,
+                    setsPortSpot: false,
+                    setsChildPortSpot: false
+                });
+            } else {
+                // For smaller diagrams, use vertical layout with generous spacing
+                optimalLayout = $(go.TreeLayout, {
+                    arrangement: go.TreeLayout.ArrangementVertical,
+                    angle: 0,
+                    compaction: go.TreeLayout.CompactionNone,
+                    layerSpacing: 140,
+                    layerSpacingParentOverlap: 0.2,
+                    nodeSpacing: 50,
+                    sorting: go.TreeLayout.SortingForwards,
+                    setsPortSpot: false,
+                    setsChildPortSpot: false
+                });
+            }
+
+            modalDiagram = new go.Diagram(containerId, {
+                layout: optimalLayout,
+                "animationManager.isEnabled": true,
+                "animationManager.duration": 500,
+                allowCopy: false,
+                allowDelete: false,
+                allowMove: true,
+                allowSelect: true,
+                hasHorizontalScrollbar: true,
+                hasVerticalScrollbar: true,
+                "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom,
+                padding: 20,
+                "grid.visible": false,
+                "undoManager.isEnabled": false
+            });
+
+            // Enhanced node template for modal with hover effects and detailed info
+            modalDiagram.nodeTemplate =
+                $(go.Node, "Auto",
+                    {
+                        selectable: true,
+                        isTreeExpanded: true,
+                        locationSpot: go.Spot.Center,
+                        fromSpot: go.Spot.AllSides,
+                        toSpot: go.Spot.AllSides,
+                        mouseEnter: function(e, node) {
+                            // Highlight on hover
+                            const shape = node.findObject("SHAPE");
+                            if (shape) {
+                                shape.stroke = "#1976d2";
+                                shape.strokeWidth = 3.5;
+                            }
+                            
+                            // Show tooltip with detailed information
+                            const nodeData = node.data;
+                            showNodeTooltip(e, nodeData);
+                        },
+                        mouseLeave: function(e, node) {
+                            // Remove highlight
+                            const shape = node.findObject("SHAPE");
+                            if (shape) {
+                                shape.stroke = node.data.borderColor || "#4299e1";
+                                shape.strokeWidth = 2.5;
+                            }
+                            
+                            // Hide tooltip
+                            hideNodeTooltip();
+                        },
+                        click: function(e, node) {
+                            // Show detailed info panel on click
+                            showNodeDetails(node.data);
+                        }
+                    },
+                    new go.Binding("isTreeExpanded"),
+                    $(go.Shape, "RoundedRectangle",
+                        {
+                            name: "SHAPE",
+                            fill: "white",
+                            stroke: "#4299e1",
+                            strokeWidth: 2.5,
+                            portId: "",
+                            fromLinkable: true,
+                            toLinkable: true,
+                            cursor: "pointer"
+                        },
+                        new go.Binding("fill", "color"),
+                        new go.Binding("stroke", "borderColor")),
+                    $(go.Panel, "Table",
+                        $(go.TextBlock,
+                            {
+                                margin: 15,
+                                font: "16px sans-serif",
+                                stroke: "#2d3748",
+                                maxSize: new go.Size(250, NaN),
+                                wrap: go.TextBlock.WrapFit,
+                                textAlign: "center",
+                                editable: false
+                            },
+                            new go.Binding("text", "text"),
+                            new go.Binding("font", "font"),
+                            new go.Binding("stroke", "textColor"))
+                    ),
+                    $("TreeExpanderButton",
+                        {
+                            width: 24,
+                            height: 24,
+                            alignment: go.Spot.TopRight,
+                            alignmentFocus: go.Spot.Center,
+                            "ButtonBorder.fill": "white",
+                            "ButtonBorder.stroke": "#4299e1",
+                            "_buttonFillOver": "#e3f2fd",
+                            "_buttonStrokeOver": "#1976d2"
+                        })
+                );
+
+            // Enhanced link template for modal
+            modalDiagram.linkTemplate =
+                $(go.Link,
+                    {
+                        routing: go.Link.Orthogonal,
+                        corner: 15,
+                        fromSpot: go.Spot.AllSides,
+                        toSpot: go.Spot.AllSides,
+                        selectable: false
+                    },
+                    $(go.Shape,
+                        {
+                            stroke: "#90cdf4",
+                            strokeWidth: 3
+                        }),
+                    $(go.Shape,
+                        {
+                            toArrow: "Standard",
+                            fill: "#90cdf4",
+                            stroke: null,
+                            scale: 1.2
+                        })
+                );
+
+            modalDiagram.model = new go.TreeModel(data);
+            
+            // Better layout and zoom handling
+            setTimeout(() => {
+                modalDiagram.layoutDiagram(true);
+                
+                // Smart zoom based on content
+                setTimeout(() => {
+                    const bounds = modalDiagram.documentBounds;
+                    const viewportSize = modalDiagram.viewportBounds;
+                    
+                    // Calculate optimal scale
+                    const scaleX = (viewportSize.width * 0.9) / bounds.width;
+                    const scaleY = (viewportSize.height * 0.9) / bounds.height;
+                    const optimalScale = Math.min(scaleX, scaleY, 1.0);
+                    
+                    modalDiagram.scale = optimalScale;
+                    modalDiagram.centerRect(bounds);
+                }, 100);
+            }, 150);
+        }
+
+        // Modal control functions
+        function modalZoomIn() {
+            if (!modalDiagram) return;
+            const currentScale = modalDiagram.scale;
+            const newScale = Math.min(currentScale * 1.2, 3.0);
+            modalDiagram.scale = newScale;
+        }
+
+        function modalZoomOut() {
+            if (!modalDiagram) return;
+            const currentScale = modalDiagram.scale;
+            const newScale = Math.max(currentScale / 1.2, 0.1);
+            modalDiagram.scale = newScale;
+        }
+
+        function modalZoomFit() {
+            if (!modalDiagram) return;
+            modalDiagram.zoomToFit();
+        }
+
+        function modalCenter() {
+            if (!modalDiagram) return;
+            const bounds = modalDiagram.documentBounds;
+            modalDiagram.centerRect(bounds);
+        }
+
+        function modalAutoOrganize() {
+            if (!modalDiagram) return;
+            
+            // Apply better layout with no overlaps
+            const $ = go.GraphObject.make;
+            const nodeCount = modalDiagram.model.nodeDataArray.length;
+            
+            let newLayout;
+            if (nodeCount > 30) {
+                // Horizontal spread layout for complex diagrams
+                newLayout = $(go.TreeLayout, {
+                    arrangement: go.TreeLayout.ArrangementHorizontal,
+                    angle: 90,
+                    compaction: go.TreeLayout.CompactionNone,
+                    layerSpacing: 180,
+                    layerSpacingParentOverlap: 0,
+                    nodeSpacing: 60,
+                    sorting: go.TreeLayout.SortingForwards,
+                    setsPortSpot: false,
+                    setsChildPortSpot: false
+                });
+            } else {
+                // Vertical spread layout for smaller diagrams
+                newLayout = $(go.TreeLayout, {
+                    arrangement: go.TreeLayout.ArrangementVertical,
+                    angle: 0,
+                    compaction: go.TreeLayout.CompactionNone,
+                    layerSpacing: 200,
+                    layerSpacingParentOverlap: 0,
+                    nodeSpacing: 80,
+                    sorting: go.TreeLayout.SortingForwards,
+                    setsPortSpot: false,
+                    setsChildPortSpot: false
+                });
+            }
+            
+            modalDiagram.layout = newLayout;
+            modalDiagram.layoutDiagram(true);
+            
+            setTimeout(() => {
+                modalDiagram.zoomToFit();
+            }, 300);
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('click', (e) => {
+            const modal = document.getElementById('mindmapModal');
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Close modal with ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Tooltip and detailed information functions
+        function showNodeTooltip(e, nodeData) {
+            const tooltip = document.getElementById('nodeTooltip');
+            const titleEl = tooltip.querySelector('.tooltip-title');
+            const descEl = tooltip.querySelector('.tooltip-description');
+            const levelEl = tooltip.querySelector('.tooltip-level');
+            
+            // Generate description based on node data
+            const description = generateNodeDescription(nodeData);
+            const level = getNodeLevel(nodeData);
+            
+            titleEl.textContent = nodeData.text;
+            descEl.textContent = description;
+            levelEl.textContent = level;
+            
+            // Position tooltip near mouse
+            const rect = e.diagram.div.getBoundingClientRect();
+            tooltip.style.left = (rect.left + e.viewPoint.x + 10) + 'px';
+            tooltip.style.top = (rect.top + e.viewPoint.y - 10) + 'px';
+            
+            tooltip.classList.remove('hidden');
+        }
+        
+        function hideNodeTooltip() {
+            const tooltip = document.getElementById('nodeTooltip');
+            tooltip.classList.add('hidden');
+        }
+        
+        function showNodeDetails(nodeData) {
+            const description = generateDetailedDescription(nodeData);
+            const level = getNodeLevel(nodeData);
+            
+            alert(`${nodeData.text}\n\nLevel: ${level}\n\n${description}\n\n💡 Tip: This is a clickable node with detailed information!`);
+        }
+        
+        function generateNodeDescription(nodeData) {
+            const descriptions = {
+                // AI descriptions
+                "Artificial Intelligence": "The simulation of human intelligence in machines that are programmed to think and learn.",
+                "Machine Learning": "A subset of AI that enables systems to learn and improve from experience without explicit programming.",
+                "Natural Language Processing": "AI technology that helps computers understand, interpret, and generate human language.",
+                "Computer Vision": "AI field focused on enabling machines to interpret and understand visual information from the world.",
+                "Deep Learning": "Advanced machine learning using neural networks with multiple layers to analyze data patterns.",
+                "Neural Networks": "Computing systems inspired by biological neural networks that constitute animal brains.",
+                "GPT Models": "Generative Pre-trained Transformers - advanced language models for text generation and understanding.",
+                
+                // Blockchain descriptions
+                "Blockchain Technology": "A distributed ledger technology that maintains a continuously growing list of records.",
+                "Smart Contracts": "Self-executing contracts with terms directly written into code on the blockchain.",
+                "Proof of Work": "A consensus mechanism requiring computational work to validate transactions and create new blocks.",
+                "Bitcoin": "The first and most well-known cryptocurrency, operating on a decentralized blockchain network.",
+                "DeFi Applications": "Decentralized Finance - financial services built on blockchain without traditional intermediaries.",
+                
+                // City Planning descriptions
+                "Sustainable City Planning": "Urban development that meets present needs without compromising future generations.",
+                "Green Infrastructure": "Network of natural and semi-natural features that provide environmental services.",
+                "Smart Grid": "Electricity network using digital technology to monitor and manage energy flow efficiently.",
+                "Urban Forests": "Trees and vegetation strategically planted in urban areas to improve environmental quality.",
+                "Public Transit": "Shared passenger transport services available for use by the general public."
+            };
+            
+            return descriptions[nodeData.text] || "Explore this concept to learn more about its role in the broader system.";
+        }
+        
+        function generateDetailedDescription(nodeData) {
+            const detailedDescriptions = {
+                // AI detailed descriptions
+                "Artificial Intelligence": "AI encompasses machine learning, neural networks, and cognitive computing to create systems that can perform tasks typically requiring human intelligence. Applications range from voice assistants to autonomous vehicles.",
+                "Machine Learning": "ML algorithms learn patterns from data to make predictions or decisions. Includes supervised learning (with labeled data), unsupervised learning (finding hidden patterns), and reinforcement learning (learning through rewards).",
+                "Deep Learning": "Uses artificial neural networks with multiple layers to progressively extract higher-level features from raw input. Powers breakthrough applications in image recognition, speech processing, and natural language understanding.",
+                
+                // Blockchain detailed descriptions
+                "Blockchain Technology": "A cryptographically secure, distributed database that maintains a continuously growing list of records (blocks) linked and secured using cryptography. Each block contains a hash of the previous block, timestamp, and transaction data.",
+                "Smart Contracts": "Computer protocols that facilitate, verify, or enforce contract negotiation or performance. They run exactly as programmed without possibility of downtime, censorship, fraud, or third-party interference.",
+                
+                // City Planning detailed descriptions
+                "Sustainable City Planning": "Integrates environmental, economic, and social considerations to create livable urban environments. Focuses on reducing carbon footprint, promoting social equity, and ensuring long-term resource availability.",
+                "Green Infrastructure": "Cost-effective, resilient approach to managing wet weather impacts that provides many community benefits. Includes rain gardens, permeable pavements, green roofs, and urban forests."
+            };
+            
+            return detailedDescriptions[nodeData.text] || generateNodeDescription(nodeData) + " This concept plays a crucial role in the interconnected system shown in this mind map.";
+        }
+        
+        function getNodeLevel(nodeData) {
+            if (!nodeData.parent) return "Root Concept";
+            
+            // Count the hierarchy level
+            let level = 1;
+            let currentKey = nodeData.parent;
+            const allData = [...artificialIntelligenceData, ...blockchainTechnologyData, ...sustainableCityPlanningData];
+            
+            while (currentKey) {
+                const parentNode = allData.find(node => node.key === currentKey);
+                if (parentNode && parentNode.parent) {
+                    level++;
+                    currentKey = parentNode.parent;
+                } else {
+                    break;
+                }
+            }
+            
+            const levelNames = ["Root Concept", "Main Category", "Sub-Category", "Detailed Component", "Specific Implementation"];
+            return levelNames[Math.min(level, levelNames.length - 1)] || `Level ${level}`;
+        }
+
+        // Initialize demos when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            createDemoDiagram("demo1", artificialIntelligenceData);
+            createDemoDiagram("demo2", blockchainTechnologyData);
+            createDemoDiagram("demo3", sustainableCityPlanningData);
+        });
+    </script>
+</body>
+</html>

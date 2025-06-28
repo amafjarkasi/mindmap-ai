@@ -1,0 +1,40 @@
+{
+  "name": "ai-mindmap-generator",
+  "version": "1.0.0",
+  "description": "A powerful web application that uses OpenAI's GPT and GoJS to create detailed, interactive mind maps from user input",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "npx serve .",
+    "dev": "npx live-server .",
+    "build": "node build.js",
+    "deploy:netlify": "netlify deploy --prod",
+    "deploy:vercel": "npm run build && vercel --prod",
+    "docker:build": "docker build -t ai-mindmap-generator .",
+    "docker:run": "docker run -p 3000:80 ai-mindmap-generator",
+    "docker:compose": "docker-compose up -d",
+    "test": "echo 'Opening application for testing...' && start index.html"
+  },
+  "keywords": [
+    "mindmap",
+    "ai",
+    "openai",
+    "gojs",
+    "visualization",
+    "diagrams",
+    "javascript",
+    "web-app"
+  ],
+  "author": "AI Mind Map Generator",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/ai-mindmap-generator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/ai-mindmap-generator/issues"
+  },
+  "homepage": "https://github.com/your-username/ai-mindmap-generator#readme"
+}

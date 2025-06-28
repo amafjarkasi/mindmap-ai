@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Mind Map Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/gojs@3.0.11/release/go.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧠 AI Mind Map Generator</h1>
+            <p>Create detailed mind maps from your ideas using AI</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="chat-section">
+                <div class="chat-container">
+                    <div id="chatMessages" class="chat-messages">
+                        <div class="message bot-message">
+                            <div class="message-content">
+                                <strong>AI Assistant:</strong> Hello! I'm here to help you create mind maps. Share your topic or idea, and I'll generate a comprehensive mind map for you.
+                                <br><br>
+                                <em>Examples:</em>
+                                <ul>
+                                    <li>"Map the future of quantum computing and its applications"</li>
+                                    <li>"Analyze the ecosystem of space exploration and commercialization"</li>
+                                    <li>"Explore the intersection of neuroscience and artificial intelligence"</li>
+                                    <li>"Design a comprehensive framework for sustainable urban development"</li>
+                                    <li>"Investigate the impact of blockchain on global financial systems"</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <div class="textarea-group">
+                            <textarea id="userInput" placeholder="Enter your topic or idea...
+
+Examples:
+• Map the future of quantum computing and its applications
+• Analyze the ecosystem of space exploration and commercialization  
+• Explore the intersection of neuroscience and artificial intelligence
+• Design a comprehensive framework for sustainable urban development" class="chat-textarea" rows="4"></textarea>
+                        </div>
+                        <div class="button-row">
+                            <a href="demo.html" class="demo-link">🎯 View Demo Examples</a>
+                            <button id="sendBtn" class="send-button">Generate Mind Map</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mindmap-section">
+                <div class="mindmap-header">
+                    <h2>Mind Map</h2>
+                    <div class="mindmap-controls">
+                        <button id="zoomInBtn" class="control-btn" title="Zoom In">
+                            <span class="icon">🔍</span>
+                            <span class="icon-symbol">+</span>
+                        </button>
+                        <button id="zoomOutBtn" class="control-btn" title="Zoom Out">
+                            <span class="icon">🔍</span>
+                            <span class="icon-symbol">−</span>
+                        </button>
+                        <button id="zoomFitBtn" class="control-btn" title="Fit to Window">
+                            <span class="icon">⬜</span>
+                        </button>
+                        <button id="autoOrganizeBtn" class="control-btn" title="Auto-Organize Layout">
+                            <span class="icon">↻</span>
+                        </button>
+                        <button id="centerBtn" class="control-btn" title="Center View">
+                            <span class="icon">⊙</span>
+                        </button>
+                        <button id="exportBtn" class="control-btn" title="Export PNG">
+                            <span class="icon">📥</span>
+                        </button>
+                        <button id="resetBtn" class="control-btn" title="Reset">
+                            <span class="icon">↺</span>
+                        </button>
+                        <button id="settingsBtn" class="control-btn" title="Settings">
+                            <span class="icon">⚙️</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="mindmapDiv" class="mindmap-container">
+                    <div class="mindmap-placeholder">
+                        <div class="placeholder-content">
+                            <div class="placeholder-icon">🗺️</div>
+                            <h3>Your Mind Map Will Appear Here</h3>
+                            <p>Start by entering a topic or idea in the chat to generate your first mind map.</p>
+                            <div class="placeholder-features">
+                                <div class="feature-item">
+                                    <span class="feature-icon">🧠</span>
+                                    <span>AI-Powered Generation</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">🔍</span>
+                                    <span>Interactive Exploration</span>
+                                </div>
+                                <div class="feature-item">
+                                    <span class="feature-icon">📱</span>
+                                    <span>Export & Share</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="loadingOverlay" class="loading-overlay hidden">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p>Generating mind map...</p>
+            </div>
+        </div>
+        
+        <!-- Settings Modal -->
+        <div id="settingsModal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>🤖 AI Model Settings</h3>
+                    <button id="closeModal" class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="setting-group">
+                        <label for="apiKeyInput">OpenAI API Key:</label>
+                        <input type="password" id="apiKeyInput" placeholder="Enter your OpenAI API key..." class="api-input-modal">
+                        <small class="setting-note">Your API key is stored locally and never sent to our servers</small>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label>Select OpenAI Model:</label>
+                        <div class="table-container">
+                            <table id="modelTable" class="model-table">
+                                <thead>
+                                    <tr>
+                                        <th class="sortable" data-column="select">Select</th>
+                                        <th class="sortable" data-column="model">Model</th>
+                                        <th class="sortable" data-column="speed">Speed</th>
+                                        <th class="sortable" data-column="cost">Cost</th>
+                                        <th class="sortable" data-column="context">Context Length</th>
+                                        <th class="sortable" data-column="capability">Capability</th>
+                                        <th class="sortable" data-column="bestFor">Best For Mind Maps</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr data-model="gpt-3.5-turbo">
+                                        <td><input type="radio" name="modelSelect" value="gpt-3.5-turbo" checked></td>
+                                        <td>GPT-3.5 Turbo</td>
+                                        <td data-sort="5">⭐⭐⭐⭐⭐</td>
+                                        <td data-sort="5">💰</td>
+                                        <td data-sort="4">4K tokens</td>
+                                        <td data-sort="3">⭐⭐⭐</td>
+                                        <td>Quick brainstorming, basic structures</td>
+                                    </tr>
+                                    <tr data-model="gpt-3.5-turbo-16k">
+                                        <td><input type="radio" name="modelSelect" value="gpt-3.5-turbo-16k"></td>
+                                        <td>GPT-3.5 Turbo 16K</td>
+                                        <td data-sort="4">⭐⭐⭐⭐</td>
+                                        <td data-sort="4">💰💰</td>
+                                        <td data-sort="5">16K tokens</td>
+                                        <td data-sort="3">⭐⭐⭐</td>
+                                        <td>Complex topics, detailed hierarchies</td>
+                                    </tr>
+                                    <tr data-model="gpt-4">
+                                        <td><input type="radio" name="modelSelect" value="gpt-4"></td>
+                                        <td>GPT-4</td>
+                                        <td data-sort="2">⭐⭐</td>
+                                        <td data-sort="1">💰💰💰💰</td>
+                                        <td data-sort="3">8K tokens</td>
+                                        <td data-sort="5">⭐⭐⭐⭐⭐</td>
+                                        <td>Professional research, deep insights</td>
+                                    </tr>
+                                    <tr data-model="gpt-4-turbo-preview">
+                                        <td><input type="radio" name="modelSelect" value="gpt-4-turbo-preview"></td>
+                                        <td>GPT-4 Turbo</td>
+                                        <td data-sort="4">⭐⭐⭐⭐</td>
+                                        <td data-sort="2">💰💰💰</td>
+                                        <td data-sort="5">128K tokens</td>
+                                        <td data-sort="5">⭐⭐⭐⭐⭐</td>
+                                        <td>Comprehensive analysis, enterprise use</td>
+                                    </tr>
+                                    <tr data-model="gpt-4o">
+                                        <td><input type="radio" name="modelSelect" value="gpt-4o"></td>
+                                        <td>GPT-4o</td>
+                                        <td data-sort="5">⭐⭐⭐⭐⭐</td>
+                                        <td data-sort="2">💰💰💰</td>
+                                        <td data-sort="5">128K tokens</td>
+                                        <td data-sort="5">⭐⭐⭐⭐⭐</td>
+                                        <td>Creative connections, innovative insights</td>
+                                    </tr>
+                                    <tr data-model="gpt-4o-mini">
+                                        <td><input type="radio" name="modelSelect" value="gpt-4o-mini"></td>
+                                        <td>GPT-4o Mini</td>
+                                        <td data-sort="5">⭐⭐⭐⭐⭐</td>
+                                        <td data-sort="4">💰💰</td>
+                                        <td data-sort="5">128K tokens</td>
+                                        <td data-sort="4">⭐⭐⭐⭐</td>
+                                        <td>Balanced performance, cost-effective</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <small class="setting-note">Click column headers to sort. Higher-tier models provide more sophisticated mind maps.</small>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label for="temperatureSlider">Creativity Level:</label>
+                        <div class="slider-container">
+                            <input type="range" id="temperatureSlider" class="temperature-slider" 
+                                   min="0.1" max="1.0" step="0.1" value="0.8">
+                            <div class="slider-labels">
+                                <span>Focused</span>
+                                <span id="tempValue">0.8</span>
+                                <span>Creative</span>
+                            </div>
+                        </div>
+                        <small class="setting-note">Higher values generate more creative and diverse mind maps</small>
+                    </div>
+                    
+                    <div class="setting-group">
+                        <label for="maxTokensSlider">Response Length:</label>
+                        <div class="slider-container">
+                            <input type="range" id="maxTokensSlider" class="tokens-slider" 
+                                   min="1500" max="4000" step="250" value="3500">
+                            <div class="slider-labels">
+                                <span>Concise</span>
+                                <span id="tokensValue">3500</span>
+                                <span>Detailed</span>
+                            </div>
+                        </div>
+                        <small class="setting-note">Higher values allow for more comprehensive mind maps</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="resetSettings" class="secondary-btn">Reset to Defaults</button>
+                    <button id="saveSettings" class="primary-btn">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
