@@ -1,30 +1,94 @@
-# AI Mind Map Generator
+# AI Mind Map Generator - Enhanced Edition
 
-A powerful web application that uses OpenAI's GPT and GoJS to create detailed, interactive mind maps from user input.
+A comprehensive, feature-rich web application that uses multiple AI models and advanced technologies to create detailed, interactive mind maps with cloud storage, collaboration, and professional export capabilities.
 
-## Features
+## 🚀 Enhanced Features
 
-- 🧠 **AI-Powered Generation**: Uses OpenAI's GPT to create comprehensive mind maps
-- 🎨 **Beautiful Visualizations**: Leverages GoJS library for professional-looking diagrams
-- 💬 **Chat Interface**: Intuitive chatbot interface for easy interaction
-- 🎯 **Interactive Mind Maps**: Expandable/collapsible nodes for better navigation
-- 📸 **Export Functionality**: Save mind maps as PNG images
-- 🔒 **Secure**: API keys are stored locally in your browser
-- 📱 **Responsive Design**: Works on desktop and mobile devices
+### Core AI & Generation
+- 🧠 **Multi-AI Support**: OpenAI GPT, Anthropic Claude, Google Gemini
+- 🔍 **Web Search Integration**: Real-time web search for current information
+- 📚 **Template Library**: Pre-built templates for business, education, research
+- 🎯 **Smart Suggestions**: AI-powered node suggestions and auto-completion
 
-## Getting Started
+### Cloud & Collaboration
+- ☁️ **Cloud Storage**: Firebase-powered cloud storage and sync
+- 👥 **Real-time Collaboration**: Multi-user editing with live cursors
+- 💬 **Comments & Annotations**: Collaborative feedback system
+- 🔄 **Version History**: Track changes and rollback capabilities
+- 🔐 **User Authentication**: Secure Google OAuth and email authentication
+
+### Advanced Export & Sharing
+- 📄 **Multiple Export Formats**: PNG, PDF, SVG, JSON, Markdown
+- 🎨 **Custom Styling**: Professional layouts and branding options
+- 🔗 **Sharing & Permissions**: Public/private sharing with role-based access
+- 📱 **PWA Support**: Offline functionality and mobile app experience
+
+### Professional Tools
+- 🔍 **Advanced Search**: Fuzzy search across all mind maps and nodes
+- 📊 **Analytics Dashboard**: Usage insights and mind map complexity analysis
+- 🎨 **Theme System**: Dark/light modes and custom themes
+- ⚡ **Auto-save**: Intelligent auto-saving with conflict resolution
+- 🔌 **API Integration**: Connect with Google Sheets, Notion, Airtable
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
+- Node.js 18+ and npm
 - A modern web browser (Chrome, Firefox, Safari, Edge)
-- An OpenAI API key (get one from [OpenAI's website](https://platform.openai.com/api-keys))
+- Firebase project (for cloud features)
+- AI API keys (OpenAI, Anthropic, or Google AI)
+- Optional: Tavily API key for web search
 
 ### Installation
 
-1. Clone or download this repository
-2. Open `index.html` in your web browser
-3. Enter your OpenAI API key in the provided field
-4. Start creating mind maps!
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/ai-mindmap-generator.git
+   cd ai-mindmap-generator
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your API keys and Firebase config
+   ```
+
+4. **Start development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open in browser**
+   Navigate to `http://localhost:3000`
+
+### Production Build
+
+```bash
+npm run build
+npm run preview
+```
+
+### Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests for CI
+npm run test:ci
+```
 
 ### Usage
 
@@ -43,6 +107,77 @@ Try these example topics to get started:
 - "Organize my thoughts about learning JavaScript"
 - "Break down the components of artificial intelligence"
 - "Plan a healthy lifestyle routine"
+
+## 🔧 Configuration
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and configure:
+
+```bash
+# Firebase Configuration (Required for cloud features)
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=123456789
+VITE_FIREBASE_APP_ID=1:123456789:web:abcdef123456
+
+# AI Provider API Keys (At least one required)
+VITE_OPENAI_API_KEY=your_openai_api_key
+VITE_ANTHROPIC_API_KEY=your_anthropic_api_key
+VITE_GOOGLE_AI_API_KEY=your_google_ai_api_key
+
+# Web Search (Optional - enhances AI generation)
+VITE_TAVILY_API_KEY=your_tavily_api_key
+
+# Feature Flags
+VITE_ENABLE_ANALYTICS=true
+VITE_ENABLE_COLLABORATION=true
+VITE_ENABLE_WEB_SEARCH=true
+VITE_ENABLE_TEMPLATES=true
+```
+
+### Firebase Setup
+
+1. **Create Firebase Project**
+   - Go to [Firebase Console](https://console.firebase.google.com/)
+   - Create a new project
+   - Enable Authentication, Firestore, and Storage
+
+2. **Configure Authentication**
+   - Enable Email/Password and Google providers
+   - Add your domain to authorized domains
+
+3. **Set up Firestore**
+   - Create database in production mode
+   - Configure security rules
+
+4. **Configure Storage**
+   - Set up storage bucket
+   - Configure security rules
+
+### API Keys Setup
+
+1. **OpenAI API Key**
+   - Visit [OpenAI Platform](https://platform.openai.com/api-keys)
+   - Create new API key
+   - Add billing information for usage
+
+2. **Anthropic API Key**
+   - Visit [Anthropic Console](https://console.anthropic.com/)
+   - Create API key
+   - Set up billing
+
+3. **Google AI API Key**
+   - Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Create API key
+   - Enable Gemini API
+
+4. **Tavily API Key (Optional)**
+   - Visit [Tavily](https://tavily.com/)
+   - Sign up and get API key
+   - Enables web search for AI generation
 
 ## Features in Detail
 
@@ -167,16 +302,148 @@ If you encounter any issues or have questions:
 2. Review the browser console for error messages
 3. Ensure your OpenAI API key is valid and has credits
 
-## Future Enhancements
+## 🚀 Deployment
 
-Potential features for future versions:
-- Multiple export formats (SVG, PDF)
-- Custom node shapes and styles
-- Collaborative editing
-- Save/load mind maps
-- Integration with other AI models
-- Dark mode theme
+### Netlify (Recommended)
+
+1. **Build the project**
+   ```bash
+   npm run build
+   ```
+
+2. **Deploy to Netlify**
+   ```bash
+   npm run deploy:netlify
+   ```
+
+3. **Configure environment variables**
+   - Go to Netlify dashboard
+   - Add all environment variables from `.env`
+   - Redeploy the site
+
+### Vercel
+
+1. **Deploy to Vercel**
+   ```bash
+   npm run deploy:vercel
+   ```
+
+2. **Configure environment variables**
+   - Go to Vercel dashboard
+   - Add environment variables
+   - Redeploy
+
+### Docker
+
+1. **Build Docker image**
+   ```bash
+   npm run docker:build
+   ```
+
+2. **Run container**
+   ```bash
+   npm run docker:run
+   ```
+
+## 🏗️ Architecture
+
+### Technology Stack
+
+- **Frontend Framework**: Vanilla TypeScript + Vite
+- **Visualization**: GoJS for mind map rendering
+- **Authentication**: Firebase Auth
+- **Database**: Cloud Firestore
+- **Storage**: Firebase Storage
+- **AI Integration**: OpenAI, Anthropic, Google AI
+- **Web Search**: Tavily API
+- **Testing**: Jest + Testing Library
+- **Build Tool**: Vite
+- **Deployment**: Netlify/Vercel/Docker
+
+### Performance Features
+
+- **Code Splitting**: Dynamic imports for modals and features
+- **Lazy Loading**: Components loaded on demand
+- **Caching**: Service worker for offline functionality
+- **PWA Support**: Installable web app
+- **Real-time Sync**: Live collaboration features
+
+## 🧪 Testing
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run with coverage
+npm run test:coverage
+
+# Run in watch mode
+npm run test:watch
+```
+
+### Test Coverage
+
+The test suite covers:
+- ✅ Authentication flows
+- ✅ AI service integration
+- ✅ Mind map generation
+- ✅ Storage operations
+- ✅ Search functionality
+- ✅ Export features
+- ✅ Error handling
+
+## 🔒 Security & Privacy
+
+### Security Features
+
+- **Authentication**: Firebase Auth with secure tokens
+- **Data Validation**: Input sanitization and validation
+- **API Security**: Secure API key management
+- **HTTPS**: Enforced HTTPS in production
+- **Rate Limiting**: API rate limiting
+
+### Privacy
+
+- **Data Encryption**: All data encrypted in transit and at rest
+- **User Control**: Users control their data and privacy settings
+- **GDPR Compliance**: Data export and deletion features
+- **Analytics Opt-out**: Optional usage analytics
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Development Workflow
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new features
+5. Run the test suite
+6. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+If you encounter any issues or have questions:
+
+- 📖 Check the [Documentation](https://github.com/your-username/ai-mindmap-generator/wiki)
+- 🐛 [Report Bugs](https://github.com/your-username/ai-mindmap-generator/issues)
+- 💬 [Join Discussions](https://github.com/your-username/ai-mindmap-generator/discussions)
+
+## 🙏 Acknowledgments
+
+- [GoJS](https://gojs.net/) for the excellent diagramming library
+- [Firebase](https://firebase.google.com/) for backend services
+- [OpenAI](https://openai.com/) for AI capabilities
+- [Vite](https://vitejs.dev/) for the build system
+- All contributors and users of this project
 
 ---
 
-**Happy Mind Mapping!** 🎉
+**Happy Mind Mapping with Enhanced AI Features!** 🎉🧠✨
