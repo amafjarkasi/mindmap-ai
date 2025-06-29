@@ -13,7 +13,7 @@ A comprehensive, feature-rich web application that uses multiple AI models and a
 - **📊 Professional Export**: Multiple export formats including PNG, PDF, SVG, and Markdown
 - **🎨 Customizable Themes**: Dark/light modes with professional styling options
 
-![Main Application Interface](docs/images/main-interface-overview.svg)
+![Main Application Interface](docs/images/main-interface-screenshot.png)
 
 ## 📸 Visual Guide & Screenshots
 
@@ -23,7 +23,7 @@ A comprehensive, feature-rich web application that uses multiple AI models and a
 
 ### Main Application Interface
 
-![Main Interface](docs/images/main-interface-overview.svg)
+![Main Interface](docs/images/main-interface-screenshot.png)
 
 **Complete overview of the AI Mind Map Generator interface featuring:**
 
@@ -34,7 +34,7 @@ A comprehensive, feature-rich web application that uses multiple AI models and a
 
 ### Interactive Demo Page
 
-![Demo Page](docs/images/demo-page.svg)
+![Demo Page](docs/images/demo-page-screenshot.png)
 
 **Comprehensive demo page showcasing:**
 
@@ -45,7 +45,7 @@ A comprehensive, feature-rich web application that uses multiple AI models and a
 
 ### Mobile Responsive Design
 
-![Mobile Main Interface](docs/images/mobile-main-interface.svg) ![Mobile Demo Page](docs/images/mobile-demo-page.svg)
+![Mobile Main Interface](docs/images/mobile-main-interface-screenshot.png) ![Mobile Demo Page](docs/images/mobile-demo-page-screenshot.png)
 
 **Mobile-optimized layouts featuring:**
 
@@ -184,7 +184,7 @@ Experience the full capabilities of the AI Mind Map Generator through our compre
 
 #### Main Application Interface
 
-![Chat Interface](docs/images/main-interface-overview.svg)
+![Chat Interface](docs/images/main-interface-screenshot.png)
 
 **Chat Section Features:**
 
@@ -195,7 +195,7 @@ Experience the full capabilities of the AI Mind Map Generator through our compre
 
 #### Mind Map Generation Area
 
-![Mind Map Area](docs/images/main-interface-overview.svg)
+![Mind Map Area](docs/images/main-interface-screenshot.png)
 
 **Visualization Features:**
 
@@ -206,7 +206,7 @@ Experience the full capabilities of the AI Mind Map Generator through our compre
 
 #### Demo Page Layout
 
-![Demo Sections](docs/images/demo-page.svg)
+![Demo Sections](docs/images/demo-page-screenshot.png)
 
 **Demo Page Components:**
 
