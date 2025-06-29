@@ -13,33 +13,46 @@ A comprehensive, feature-rich web application that uses multiple AI models and a
 - **📊 Professional Export**: Multiple export formats including PNG, PDF, SVG, and Markdown
 - **🎨 Customizable Themes**: Dark/light modes with professional styling options
 
-![Main Application Interface](docs/images/main-interface-overview.png)
+![Main Application Interface](docs/images/main-interface-overview.svg)
 
 ## 📸 Visual Guide & Screenshots
 
+> **📱 Live Demo Available**: Experience the full interface by running the application locally at `http://localhost:3000`
+>
+> **🎯 Interactive Features**: View comprehensive demos at `http://localhost:3000/demo.html`
+
 ### Main Application Interface
 
-![Main Interface](docs/images/main-interface-full.png)
+![Main Interface](docs/images/main-interface-overview.svg)
 
-*Complete overview of the AI Mind Map Generator interface showing the chat section, demo link, and mind map visualization area*
+**Complete overview of the AI Mind Map Generator interface featuring:**
+
+- Clean, professional chat section with optimized spacing
+- Prominent "View Interactive Demos" button for easy navigation
+- Mind map visualization area with GoJS-powered rendering
+- Responsive design that adapts to all screen sizes
 
 ### Interactive Demo Page
 
-![Demo Page](docs/images/demo-page-overview.png)
+![Demo Page](docs/images/demo-page.svg)
 
-*Comprehensive demo page showcasing three different AI-generated mind maps with interactive features*
+**Comprehensive demo page showcasing:**
 
-### Navigation & User Experience
-
-![Navigation Flow](docs/images/navigation-flow.png)
-
-*Seamless navigation between main application and demo page with consistent button positioning*
+- Three different AI-generated mind maps with interactive features
+- Artificial Intelligence Ecosystem (26 nodes across 4 levels)
+- Blockchain Technology Deep Dive (36 nodes with technical specs)
+- Sustainable City Planning Framework (40 nodes with multi-level relationships)
 
 ### Mobile Responsive Design
 
-![Mobile Main Interface](docs/images/mobile-responsive-main.png) ![Mobile Demo Page](docs/images/mobile-responsive-demo.png)
+![Mobile Main Interface](docs/images/mobile-main-interface.svg) ![Mobile Demo Page](docs/images/mobile-demo-page.svg)
 
-*Mobile-optimized layouts for both main application and demo page, ensuring excellent user experience across all devices*
+**Mobile-optimized layouts featuring:**
+
+- Responsive chat interface with reduced padding for mobile devices
+- Touch-friendly navigation and controls
+- Optimized mind map viewing with pan and zoom capabilities
+- Consistent user experience across desktop, tablet, and mobile devices
 
 ## ✨ Recent Improvements & Fixes
 
@@ -171,9 +184,10 @@ Experience the full capabilities of the AI Mind Map Generator through our compre
 
 #### Main Application Interface
 
-![Chat Interface](docs/images/chat-interface-detail.png)
+![Chat Interface](docs/images/main-interface-overview.svg)
 
 **Chat Section Features:**
+
 - AI assistant with helpful examples and guidance
 - Prominent "View Interactive Demos" button for easy access
 - Clean, intuitive input area for mind map generation
@@ -181,9 +195,10 @@ Experience the full capabilities of the AI Mind Map Generator through our compre
 
 #### Mind Map Generation Area
 
-![Mind Map Area](docs/images/mindmap-generation-area.png)
+![Mind Map Area](docs/images/main-interface-overview.svg)
 
 **Visualization Features:**
+
 - Professional GoJS-powered mind map rendering
 - Interactive zoom, pan, and navigation controls
 - Export capabilities for PNG, PDF, and other formats
@@ -191,9 +206,10 @@ Experience the full capabilities of the AI Mind Map Generator through our compre
 
 #### Demo Page Layout
 
-![Demo Sections](docs/images/demo-sections-detail.png)
+![Demo Sections](docs/images/demo-page.svg)
 
 **Demo Page Components:**
+
 - Three comprehensive mind map examples
 - Detailed descriptions and technical specifications
 - Fullscreen modal views with enhanced controls
