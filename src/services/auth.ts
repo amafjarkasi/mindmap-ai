@@ -20,24 +20,77 @@ class AuthService {
 
   constructor() {
     this.initAuthStateListener();
+    this.handleConnectionRecovery();
   }
 
   private initAuthStateListener() {
     onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        this.currentUser = await this.createUserFromFirebaseUser(firebaseUser);
-      } else {
+      try {
+        if (firebaseUser) {
+          this.currentUser = await this.createUserFromFirebaseUser(firebaseUser);
+        } else {
+          this.currentUser = null;
+        }
+
+        // Notify all listeners
+        this.authStateListeners.forEach(listener => {
+          try {
+            listener(this.currentUser);
+          } catch (error) {
+            console.error('Error in auth state listener:', error);
+          }
+        });
+      } catch (error) {
+        console.error('Error in auth state change handler:', error);
+        // Don't sign out user on temporary errors
+        if (this.isTemporaryError(error)) {
+          console.warn('Temporary auth error, maintaining current state');
+          return;
+        }
         this.currentUser = null;
+        this.authStateListeners.forEach(listener => {
+          try {
+            listener(null);
+          } catch (listenerError) {
+            console.error('Error in auth state listener:', listenerError);
+          }
+        });
       }
-      
-      // Notify all listeners
-      this.authStateListeners.forEach(listener => listener(this.currentUser));
     });
   }
 
+  private isTemporaryError(error: any): boolean {
+    if (!error) return false;
+
+    const errorCode = error.code || '';
+    const errorMessage = error.message || '';
+
+    // Network-related errors that might be temporary
+    const temporaryErrors = [
+      'auth/network-request-failed',
+      'auth/timeout',
+      'unavailable',
+      'deadline-exceeded',
+      'internal',
+      'websocket',
+      'connection'
+    ];
+
+    return temporaryErrors.some(tempError =>
+      errorCode.includes(tempError) || errorMessage.toLowerCase().includes(tempError)
+    );
+  }
+
   private async createUserFromFirebaseUser(firebaseUser: FirebaseUser): Promise<User> {
-    const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-    const userData = userDoc.data();
+    let userData: any = null;
+
+    try {
+      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+      userData = userDoc.data();
+    } catch (error) {
+      console.warn('Failed to fetch user data from Firestore, using Firebase user data only:', error);
+      // Continue with just Firebase user data if Firestore fails
+    }
 
     const defaultPreferences: UserPreferences = {
       theme: 'auto',
@@ -214,7 +267,10 @@ class AuthService {
 
   onAuthStateChange(callback: (user: User | null) => void): () => void {
     this.authStateListeners.push(callback);
-    
+
+    // Call immediately with current state
+    callback(this.currentUser);
+
     // Return unsubscribe function
     return () => {
       const index = this.authStateListeners.indexOf(callback);
@@ -242,6 +298,35 @@ class AuthService {
         return 'Network error. Please check your connection and try again.';
       default:
         return 'An error occurred during authentication. Please try again.';
+    }
+  }
+
+  // Method to refresh authentication state (useful for connection recovery)
+  async refreshAuthState(): Promise<void> {
+    try {
+      if (auth.currentUser) {
+        await auth.currentUser.reload();
+        this.currentUser = await this.createUserFromFirebaseUser(auth.currentUser);
+        this.authStateListeners.forEach(listener => {
+          try {
+            listener(this.currentUser);
+          } catch (error) {
+            console.error('Error in auth state listener during refresh:', error);
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Failed to refresh auth state:', error);
+    }
+  }
+
+  // Method to handle connection recovery
+  handleConnectionRecovery(): void {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', () => {
+        console.log('Connection restored, refreshing auth state');
+        this.refreshAuthState();
+      });
     }
   }
 }

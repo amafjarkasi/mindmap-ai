@@ -1,10 +1,11 @@
-import type { 
-  AIProvider, 
-  GenerationRequest, 
-  MindMapData, 
+import type {
+  AIProvider,
+  GenerationRequest,
+  MindMapData,
   SearchResult,
-  Template 
+  Template
 } from '@types/index';
+import { getEnvVar } from '../utils/env';
 
 interface WebSearchProvider {
   search(query: string, maxResults?: number): Promise<SearchResult[]>;
@@ -57,7 +58,7 @@ class AIService {
 
   constructor() {
     // Initialize web search if API key is available
-    const tavilyApiKey = localStorage.getItem('tavily_api_key') || import.meta.env.VITE_TAVILY_API_KEY;
+    const tavilyApiKey = localStorage.getItem('tavily_api_key') || getEnvVar('VITE_TAVILY_API_KEY');
     if (tavilyApiKey) {
       this.webSearchProvider = new TavilySearchProvider(tavilyApiKey);
     }

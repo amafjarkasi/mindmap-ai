@@ -1,0 +1,48 @@
+{
+  "name": "AI Mind Map Generator",
+  "short_name": "MindMap AI",
+  "description": "Create AI-powered mind maps with advanced features including cloud storage, collaboration, and multiple export formats",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#667eea",
+  "orientation": "any",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["productivity", "education", "business"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshot-narrow.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "features": [
+    "AI-powered mind map generation",
+    "Real-time collaboration",
+    "Cloud storage",
+    "Multiple export formats",
+    "Template library"
+  ]
+}

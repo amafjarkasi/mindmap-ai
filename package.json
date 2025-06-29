@@ -1,7 +1,7 @@
 {
   "name": "ai-mindmap-generator",
   "version": "1.0.0",
-  "description": "A powerful web application that uses OpenAI's GPT and GoJS to create detailed, interactive mind maps from user input",
+  "description": "AI-powered mind map generator with multi-model support, real-time collaboration, cloud storage, and professional export capabilities. Features optimized chat interface, stable navigation, and responsive design.",
   "main": "index.html",
   "scripts": {
     "dev": "vite",
@@ -26,11 +26,23 @@
     "mindmap",
     "ai",
     "openai",
+    "anthropic",
+    "claude",
+    "gemini",
     "gojs",
     "visualization",
     "diagrams",
     "javascript",
-    "web-app"
+    "typescript",
+    "web-app",
+    "collaboration",
+    "real-time",
+    "firebase",
+    "pwa",
+    "responsive-design",
+    "chat-interface",
+    "export",
+    "cloud-storage"
   ],
   "author": "AI Mind Map Generator",
   "license": "MIT",
@@ -53,12 +65,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-username/ai-mindmap-generator.git"
+    "url": "git+https://github.com/amafjarkasi/mindmap-ai.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/ai-mindmap-generator/issues"
+    "url": "https://github.com/amafjarkasi/mindmap-ai/issues"
   },
-  "homepage": "https://github.com/your-username/ai-mindmap-generator#readme",
+  "homepage": "https://github.com/amafjarkasi/mindmap-ai#readme",
   "dependencies": {
     "chart.js": "^4.5.0",
     "firebase": "^11.9.1",

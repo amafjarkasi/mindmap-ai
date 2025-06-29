@@ -8,8 +8,8 @@
     <meta name="keywords" content="mindmap, ai, openai, visualization, collaboration, productivity">
 
     <!-- Favicon and app icons -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="apple-touch-icon" href="/favicon.svg">
 
     <!-- PWA manifest -->
     <link rel="manifest" href="/manifest.json">
@@ -53,18 +53,20 @@
                         </div>
                     </div>
                     
+                    <!-- Demo Link Section -->
+                    <div class="demo-section">
+                        <a href="demo.html" class="demo-link-prominent">
+                            <span class="demo-icon">🎯</span>
+                            <span class="demo-text">View Interactive Demos</span>
+                            <span class="demo-arrow">→</span>
+                        </a>
+                    </div>
+
                     <div class="chat-input-container">
                         <div class="textarea-group">
-                            <textarea id="userInput" placeholder="Enter your topic or idea...
-
-Examples:
-• Map the future of quantum computing and its applications
-• Analyze the ecosystem of space exploration and commercialization  
-• Explore the intersection of neuroscience and artificial intelligence
-• Design a comprehensive framework for sustainable urban development" class="chat-textarea" rows="4"></textarea>
+                            <textarea id="userInput" placeholder="Enter your topic or idea here..." class="chat-textarea" rows="4"></textarea>
                         </div>
                         <div class="button-row">
-                            <a href="demo.html" class="demo-link">🎯 View Demo Examples</a>
                             <button id="sendBtn" class="send-button">Generate Mind Map</button>
                         </div>
                     </div>
@@ -173,7 +175,7 @@ Examples:
         </div>
         
         <!-- Settings Modal -->
-        <div id="settingsModal" class="modal hidden">
+        <div id="settingsModal" class="modal settings-modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>🤖 AI Model Settings</h3>

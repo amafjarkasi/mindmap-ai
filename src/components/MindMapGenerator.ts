@@ -6,8 +6,10 @@ import { templateService } from '../services/templateService';
 import { authService } from '../services/auth';
 import { analyticsService } from '../services/analyticsService';
 import { collaborationService } from '../services/collaborationService';
+import { ShareModal } from './ShareModal';
 import type {
   MindMapData,
+  MindMapNode,
   AIProvider,
   GenerationRequest,
   ExportOptions,
@@ -23,8 +25,10 @@ export class MindMapGenerator {
   private currentMindMapId: string | null = null;
   private autoSaveEnabled: boolean = true;
   private autoSaveInterval: number = 30000; // 30 seconds
+  private shareModal: ShareModal;
 
   constructor() {
+    this.shareModal = new ShareModal();
     this.init();
   }
 
@@ -41,15 +45,25 @@ export class MindMapGenerator {
     this.diagram = new go.Diagram("mindmapDiv", {
       "undoManager.isEnabled": true,
       layout: $(go.TreeLayout, {
+        // Basic layout configuration
         arrangement: go.TreeLayout.ArrangementVertical,
         angle: 0,
         compaction: go.TreeLayout.CompactionNone,
-        layerSpacing: 80,
-        layerSpacingParentOverlap: 1,
-        nodeSpacing: 25,
         sorting: go.TreeLayout.SortingAscending,
+
+        // Spacing configuration for optimal node separation
+        layerSpacing: 120,  // Distance between parent and child layers
+        layerSpacingParentOverlap: 0.5,  // Reduced overlap between layers
+        nodeSpacing: 50,  // Distance between sibling nodes
+
+        // Port configuration for link connections
         setsPortSpot: false,
-        setsChildPortSpot: false
+        setsChildPortSpot: false,
+
+        // Advanced spacing properties (all valid GoJS TreeLayout properties)
+        breadthLimit: 0,  // No limit on breadth (0 = unlimited)
+        rowSpacing: 30   // Extra spacing between rows when breadthLimit is used
+        // Note: columnSpacing is NOT a valid TreeLayout property and was removed
       }),
       "animationManager.isEnabled": true,
       "toolManager.hoverDelay": 100,
@@ -96,10 +110,11 @@ export class MindMapGenerator {
         $(go.Panel, "Table",
           $(go.TextBlock,
             {
-              margin: 12,
+              margin: 16,  // Increased margin for better spacing
               font: "14px 'Segoe UI', sans-serif",
               stroke: "#2d3748",
-              maxSize: new go.Size(250, NaN),
+              maxSize: new go.Size(280, NaN),  // Increased max width
+              minSize: new go.Size(120, 40),   // Minimum size to prevent tiny nodes
               wrap: go.TextBlock.WrapFit,
               editable: false,
               textAlign: "center",
@@ -125,27 +140,30 @@ export class MindMapGenerator {
           })
       );
 
-    // Enhanced link template
+    // Enhanced link template with better spacing
     this.diagram.linkTemplate =
       $(go.Link,
         {
           selectable: false,
           routing: go.Link.Orthogonal,
-          corner: 10,
+          corner: 15,  // Increased corner radius for smoother curves
           fromSpot: go.Spot.RightSide,
-          toSpot: go.Spot.LeftSide
+          toSpot: go.Spot.LeftSide,
+          // Add some spacing from nodes
+          fromEndSegmentLength: 20,
+          toEndSegmentLength: 20
         },
         $(go.Shape,
           {
             stroke: "#90cdf4",
-            strokeWidth: 2
+            strokeWidth: 2.5  // Slightly thicker for better visibility
           }),
         $(go.Shape,
           {
             toArrow: "Standard",
             fill: "#90cdf4",
             stroke: null,
-            scale: 1
+            scale: 1.2  // Slightly larger arrow
           })
       );
 
@@ -154,6 +172,12 @@ export class MindMapGenerator {
       if (this.autoSaveEnabled && this.currentMindMapId) {
         this.scheduleAutoSave();
       }
+    });
+
+    // Add layout completed listener to ensure proper spacing
+    this.diagram.addDiagramListener("LayoutCompleted", (e: any) => {
+      // Ensure nodes don't overlap after layout
+      this.ensureNoOverlaps();
     });
 
     // Make diagram globally available for export functions
@@ -477,24 +501,39 @@ export class MindMapGenerator {
 
     try {
       // Convert mind map data to GoJS format
-      const nodeDataArray = data.nodes.map(node => ({
-        key: node.key,
-        text: node.text,
-        parent: node.parent,
-        color: node.color || this.getNodeColor(node.level || 0),
-        borderColor: node.borderColor || this.getBorderColor(node.level || 0),
-        textColor: node.textColor || '#ffffff',
-        font: node.font || '14px "Segoe UI", sans-serif',
-        level: node.level || 0,
-        isTreeExpanded: node.isTreeExpanded !== false
-      }));
+      const nodeDataArray = data.nodes.map(node => {
+        const nodeData: any = {
+          key: node.key,
+          text: node.text,
+          color: node.color || this.getNodeColor(node.level || 0),
+          borderColor: node.borderColor || this.getBorderColor(node.level || 0),
+          textColor: node.textColor || '#ffffff',
+          font: node.font || '14px "Segoe UI", sans-serif',
+          level: node.level || 0,
+          isTreeExpanded: node.isTreeExpanded !== false
+        };
+
+        // Only set parent if it's not null/undefined (GoJS TreeModel requirement)
+        if (node.parent != null) {
+          nodeData.parent = node.parent;
+        }
+
+        return nodeData;
+      });
 
       // Create the model
       this.diagram.model = new go.TreeModel(nodeDataArray);
 
-      // Auto-layout and center
+      // Auto-layout with proper spacing
       this.diagram.layoutDiagram(true);
-      this.zoomToFit();
+
+      // Allow layout to complete before centering
+      setTimeout(() => {
+        // Ensure root node is properly positioned
+        this.positionRootNode();
+        this.zoomToFit();
+        this.centerDiagram();
+      }, 100);
 
       console.log('Mind map created with', nodeDataArray.length, 'nodes');
     } catch (error) {
@@ -600,6 +639,14 @@ export class MindMapGenerator {
     };
 
     this.diagram.model.addNodeData(newNodeData);
+
+    // Apply layout with better spacing
+    this.diagram.layoutDiagram(true);
+
+    // Ensure proper spacing and centering
+    setTimeout(() => {
+      this.centerDiagram();
+    }, 200);
 
     // Update current mind map data
     if (this.currentMindMap) {
@@ -735,14 +782,384 @@ export class MindMapGenerator {
   }
 
   private showTemplateModal(): void {
-    // Template modal functionality would be implemented here
-    console.log('Template modal would open here');
+    this.createTemplateModal();
   }
 
-  private applyTemplate(template: any): void {
-    // Convert template to mind map format and apply
-    console.log('Applying template:', template.name);
-    analyticsService.trackTemplateUsed(template.id);
+  private createTemplateModal(): void {
+    // Remove existing modal if it exists
+    const existingModal = document.getElementById('templateModal');
+    if (existingModal) {
+      existingModal.remove();
+    }
+
+    // Create template modal
+    const modal = document.createElement('div');
+    modal.id = 'templateModal';
+    modal.className = 'template-modal hidden';
+    modal.innerHTML = `
+      <div class="modal-overlay" onclick="this.closest('.template-modal').classList.add('hidden')">
+        <div class="modal-content" onclick="event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Choose a Template</h2>
+            <button class="close-btn" onclick="this.closest('.template-modal').classList.add('hidden')">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="template-grid">
+              <div class="template-card" data-template="business">
+                <div class="template-preview">📊</div>
+                <h3>Business Strategy</h3>
+                <p>Comprehensive business planning and strategy development</p>
+              </div>
+              <div class="template-card" data-template="project">
+                <div class="template-preview">🚀</div>
+                <h3>Project Planning</h3>
+                <p>Project management and milestone tracking</p>
+              </div>
+              <div class="template-card" data-template="learning">
+                <div class="template-preview">📚</div>
+                <h3>Learning & Education</h3>
+                <p>Educational content and knowledge mapping</p>
+              </div>
+              <div class="template-card" data-template="research">
+                <div class="template-preview">🔬</div>
+                <h3>Research & Analysis</h3>
+                <p>Research methodology and data analysis</p>
+              </div>
+              <div class="template-card" data-template="creative">
+                <div class="template-preview">🎨</div>
+                <h3>Creative Process</h3>
+                <p>Creative brainstorming and ideation</p>
+              </div>
+              <div class="template-card" data-template="personal">
+                <div class="template-preview">👤</div>
+                <h3>Personal Development</h3>
+                <p>Goal setting and personal growth planning</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Add event listeners for template selection
+    const templateCards = modal.querySelectorAll('.template-card');
+    templateCards.forEach(card => {
+      card.addEventListener('click', () => {
+        const templateType = card.getAttribute('data-template');
+        this.applyTemplate(templateType);
+        modal.classList.add('hidden');
+      });
+    });
+
+    // Show modal
+    modal.classList.remove('hidden');
+  }
+
+  private applyTemplate(templateType: string): void {
+    const templates = {
+      business: {
+        name: 'Business Strategy',
+        data: this.createTemplateData('Business Strategy', [
+          {
+            text: 'Market Analysis',
+            children: [
+              { text: 'Target Audience' },
+              { text: 'Competitor Analysis' },
+              { text: 'Market Size' }
+            ]
+          },
+          {
+            text: 'Product Strategy',
+            children: [
+              { text: 'Value Proposition' },
+              { text: 'Features & Benefits' },
+              { text: 'Pricing Strategy' }
+            ]
+          },
+          {
+            text: 'Operations',
+            children: [
+              { text: 'Supply Chain' },
+              { text: 'Quality Control' },
+              { text: 'Cost Management' }
+            ]
+          },
+          {
+            text: 'Financial Planning',
+            children: [
+              { text: 'Revenue Projections' },
+              { text: 'Budget Allocation' },
+              { text: 'ROI Analysis' }
+            ]
+          }
+        ], 'business')
+      },
+      project: {
+        name: 'Project Planning',
+        data: this.createTemplateData('Project Planning', [
+          {
+            text: 'Project Scope',
+            children: [
+              { text: 'Objectives' },
+              { text: 'Deliverables' },
+              { text: 'Requirements' }
+            ]
+          },
+          {
+            text: 'Timeline',
+            children: [
+              { text: 'Milestones' },
+              { text: 'Dependencies' },
+              { text: 'Critical Path' }
+            ]
+          },
+          {
+            text: 'Resources',
+            children: [
+              { text: 'Team Members' },
+              { text: 'Budget' },
+              { text: 'Tools & Equipment' }
+            ]
+          },
+          {
+            text: 'Risk Management',
+            children: [
+              { text: 'Risk Assessment' },
+              { text: 'Mitigation Strategies' },
+              { text: 'Contingency Plans' }
+            ]
+          }
+        ], 'project')
+      },
+      learning: {
+        name: 'Learning & Education',
+        data: this.createTemplateData('Learning Topic', [
+          {
+            text: 'Core Concepts',
+            children: [
+              { text: 'Fundamental Principles' },
+              { text: 'Key Terminology' },
+              { text: 'Basic Theory' }
+            ]
+          },
+          {
+            text: 'Practical Applications',
+            children: [
+              { text: 'Real-world Examples' },
+              { text: 'Case Studies' },
+              { text: 'Hands-on Practice' }
+            ]
+          },
+          {
+            text: 'Advanced Topics',
+            children: [
+              { text: 'Complex Scenarios' },
+              { text: 'Expert Techniques' },
+              { text: 'Latest Developments' }
+            ]
+          },
+          {
+            text: 'Assessment',
+            children: [
+              { text: 'Knowledge Check' },
+              { text: 'Skill Evaluation' },
+              { text: 'Progress Tracking' }
+            ]
+          }
+        ], 'learning')
+      },
+      research: {
+        name: 'Research & Analysis',
+        data: this.createTemplateData('Research Project', [
+          {
+            text: 'Research Question',
+            children: [
+              { text: 'Problem Statement' },
+              { text: 'Hypothesis' },
+              { text: 'Objectives' }
+            ]
+          },
+          {
+            text: 'Methodology',
+            children: [
+              { text: 'Data Collection' },
+              { text: 'Analysis Methods' },
+              { text: 'Sample Size' }
+            ]
+          },
+          {
+            text: 'Literature Review',
+            children: [
+              { text: 'Previous Studies' },
+              { text: 'Theoretical Framework' },
+              { text: 'Knowledge Gaps' }
+            ]
+          },
+          {
+            text: 'Results & Conclusions',
+            children: [
+              { text: 'Findings' },
+              { text: 'Implications' },
+              { text: 'Future Research' }
+            ]
+          }
+        ], 'research')
+      },
+      creative: {
+        name: 'Creative Process',
+        data: this.createTemplateData('Creative Project', [
+          {
+            text: 'Inspiration',
+            children: [
+              { text: 'Mood Board' },
+              { text: 'References' },
+              { text: 'Brainstorming' }
+            ]
+          },
+          {
+            text: 'Concept Development',
+            children: [
+              { text: 'Initial Ideas' },
+              { text: 'Sketches' },
+              { text: 'Refinement' }
+            ]
+          },
+          {
+            text: 'Execution',
+            children: [
+              { text: 'Tools & Materials' },
+              { text: 'Techniques' },
+              { text: 'Iterations' }
+            ]
+          },
+          {
+            text: 'Evaluation',
+            children: [
+              { text: 'Feedback' },
+              { text: 'Improvements' },
+              { text: 'Final Output' }
+            ]
+          }
+        ], 'creative')
+      },
+      personal: {
+        name: 'Personal Development',
+        data: this.createTemplateData('Personal Growth', [
+          {
+            text: 'Self Assessment',
+            children: [
+              { text: 'Strengths' },
+              { text: 'Areas for Improvement' },
+              { text: 'Values & Priorities' }
+            ]
+          },
+          {
+            text: 'Goal Setting',
+            children: [
+              { text: 'Short-term Goals' },
+              { text: 'Long-term Vision' },
+              { text: 'Action Plans' }
+            ]
+          },
+          {
+            text: 'Skill Development',
+            children: [
+              { text: 'Learning Opportunities' },
+              { text: 'Practice & Application' },
+              { text: 'Mentorship' }
+            ]
+          },
+          {
+            text: 'Progress Tracking',
+            children: [
+              { text: 'Milestones' },
+              { text: 'Regular Reviews' },
+              { text: 'Adjustments' }
+            ]
+          }
+        ], 'personal')
+      }
+    };
+
+    const template = templates[templateType as keyof typeof templates];
+    if (template) {
+      this.createMindMap(template.data);
+      this.addMessage(`Applied ${template.name} template successfully!`, 'bot');
+
+      // Track template usage if analytics service is available
+      if (typeof analyticsService !== 'undefined') {
+        analyticsService.trackTemplateUsed(templateType);
+      }
+    }
+  }
+
+  private createTemplateData(title: string, hierarchicalData: any[], templateType: string): MindMapData {
+    const nodes: MindMapNode[] = [];
+    const now = new Date().toISOString();
+
+    // Create root node
+    const rootKey = 'root';
+    nodes.push({
+      key: rootKey,
+      text: title,
+      // Don't set parent for root node - GoJS TreeModel expects undefined for root nodes
+      level: 0,
+      color: this.getNodeColor(0),
+      borderColor: this.getBorderColor(0),
+      textColor: '#ffffff',
+      metadata: {
+        created: now,
+        modified: now
+      }
+    });
+
+    // Convert hierarchical data to flat node structure
+    this.convertHierarchicalToNodes(hierarchicalData, nodes, rootKey, 1);
+
+    return {
+      title,
+      description: `Template: ${title}`,
+      nodes,
+      metadata: {
+        created: now,
+        modified: now,
+        author: '',
+        version: 1,
+        tags: ['template', templateType],
+        isPublic: false
+      }
+    };
+  }
+
+  private convertHierarchicalToNodes(
+    data: any[],
+    nodes: MindMapNode[],
+    parentKey: string,
+    level: number
+  ): void {
+    data.forEach((item, index) => {
+      const nodeKey = `${parentKey}_${level}_${index}`;
+
+      nodes.push({
+        key: nodeKey,
+        text: item.text,
+        parent: parentKey,
+        level,
+        color: this.getNodeColor(level),
+        borderColor: this.getBorderColor(level),
+        textColor: '#ffffff',
+        metadata: {
+          created: new Date().toISOString(),
+          modified: new Date().toISOString()
+        }
+      });
+
+      if (item.children && item.children.length > 0) {
+        this.convertHierarchicalToNodes(item.children, nodes, nodeKey, level + 1);
+      }
+    });
   }
 
   private showExportModal(): void {
@@ -756,8 +1173,146 @@ export class MindMapGenerator {
   }
 
   private showSettingsModal(): void {
-    // Settings modal functionality would be implemented here
-    console.log('Settings modal would open here');
+    const modal = document.getElementById('settingsModal');
+    if (modal) {
+      modal.classList.remove('hidden');
+      this.loadSettingsToModal();
+      this.setupSettingsModalEventListeners();
+    }
+  }
+
+  private loadSettingsToModal(): void {
+    // Load API key
+    const apiKeyInput = document.getElementById('apiKeyInput') as HTMLInputElement;
+    if (apiKeyInput) {
+      apiKeyInput.value = localStorage.getItem('openai_api_key') || '';
+    }
+
+    // Load selected model
+    const selectedModel = localStorage.getItem('openai_model') || 'gpt-3.5-turbo';
+    const modelRadio = document.querySelector(`input[name="modelSelect"][value="${selectedModel}"]`) as HTMLInputElement;
+    if (modelRadio) {
+      modelRadio.checked = true;
+    }
+
+    // Load temperature
+    const temperatureSlider = document.getElementById('temperatureSlider') as HTMLInputElement;
+    const tempValue = document.getElementById('tempValue');
+    if (temperatureSlider && tempValue) {
+      const temperature = localStorage.getItem('openai_temperature') || '0.8';
+      temperatureSlider.value = temperature;
+      tempValue.textContent = temperature;
+    }
+
+    // Load max tokens
+    const maxTokensSlider = document.getElementById('maxTokensSlider') as HTMLInputElement;
+    const tokensValue = document.getElementById('tokensValue');
+    if (maxTokensSlider && tokensValue) {
+      const maxTokens = localStorage.getItem('openai_max_tokens') || '3500';
+      maxTokensSlider.value = maxTokens;
+      tokensValue.textContent = maxTokens;
+    }
+  }
+
+  private setupSettingsModalEventListeners(): void {
+    // Close modal button
+    const closeBtn = document.getElementById('closeModal');
+    if (closeBtn) {
+      closeBtn.onclick = () => this.closeSettingsModal();
+    }
+
+    // Temperature slider
+    const temperatureSlider = document.getElementById('temperatureSlider') as HTMLInputElement;
+    const tempValue = document.getElementById('tempValue');
+    if (temperatureSlider && tempValue) {
+      temperatureSlider.oninput = () => {
+        tempValue.textContent = temperatureSlider.value;
+      };
+    }
+
+    // Max tokens slider
+    const maxTokensSlider = document.getElementById('maxTokensSlider') as HTMLInputElement;
+    const tokensValue = document.getElementById('tokensValue');
+    if (maxTokensSlider && tokensValue) {
+      maxTokensSlider.oninput = () => {
+        tokensValue.textContent = maxTokensSlider.value;
+      };
+    }
+
+    // Save settings button
+    const saveBtn = document.getElementById('saveSettings');
+    if (saveBtn) {
+      saveBtn.onclick = () => this.saveSettings();
+    }
+
+    // Reset settings button
+    const resetBtn = document.getElementById('resetSettings');
+    if (resetBtn) {
+      resetBtn.onclick = () => this.resetSettings();
+    }
+
+    // Close modal when clicking outside
+    const modal = document.getElementById('settingsModal');
+    if (modal) {
+      modal.onclick = (e) => {
+        if (e.target === modal) {
+          this.closeSettingsModal();
+        }
+      };
+    }
+  }
+
+  private closeSettingsModal(): void {
+    const modal = document.getElementById('settingsModal');
+    if (modal) {
+      modal.classList.add('hidden');
+    }
+  }
+
+  private saveSettings(): void {
+    try {
+      // Save API key
+      const apiKeyInput = document.getElementById('apiKeyInput') as HTMLInputElement;
+      if (apiKeyInput) {
+        localStorage.setItem('openai_api_key', apiKeyInput.value);
+      }
+
+      // Save selected model
+      const selectedModel = document.querySelector('input[name="modelSelect"]:checked') as HTMLInputElement;
+      if (selectedModel) {
+        localStorage.setItem('openai_model', selectedModel.value);
+      }
+
+      // Save temperature
+      const temperatureSlider = document.getElementById('temperatureSlider') as HTMLInputElement;
+      if (temperatureSlider) {
+        localStorage.setItem('openai_temperature', temperatureSlider.value);
+      }
+
+      // Save max tokens
+      const maxTokensSlider = document.getElementById('maxTokensSlider') as HTMLInputElement;
+      if (maxTokensSlider) {
+        localStorage.setItem('openai_max_tokens', maxTokensSlider.value);
+      }
+
+      this.closeSettingsModal();
+      this.showSuccess('Settings saved successfully!');
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      this.showError('Failed to save settings. Please try again.');
+    }
+  }
+
+  private resetSettings(): void {
+    // Reset to default values
+    localStorage.removeItem('openai_api_key');
+    localStorage.setItem('openai_model', 'gpt-3.5-turbo');
+    localStorage.setItem('openai_temperature', '0.8');
+    localStorage.setItem('openai_max_tokens', '3500');
+
+    // Reload the modal with default values
+    this.loadSettingsToModal();
+    this.showSuccess('Settings reset to defaults!');
   }
 
   private showLoadModal(): void {
@@ -782,8 +1337,7 @@ export class MindMapGenerator {
       return;
     }
 
-    // Share modal functionality would be implemented here
-    console.log('Share modal would open here');
+    this.shareModal.show(this.currentMindMap);
   }
 
   private async saveMindMap(): Promise<void> {
@@ -829,7 +1383,16 @@ export class MindMapGenerator {
 
   private autoOrganize(): void {
     if (this.diagram) {
+      // Apply layout with animation
       this.diagram.layoutDiagram(true);
+
+      // Ensure proper spacing after layout
+      this.diagram.commitTransaction("auto-organize");
+
+      // Center the diagram after reorganizing
+      setTimeout(() => {
+        this.centerDiagram();
+      }, 300);
     }
   }
 
@@ -837,6 +1400,50 @@ export class MindMapGenerator {
     if (this.diagram) {
       this.diagram.centerRect(this.diagram.documentBounds);
     }
+  }
+
+  private positionRootNode(): void {
+    if (this.diagram) {
+      // Find and position the root node optimally
+      const rootNodes = this.diagram.findTreeRoots();
+      rootNodes.each((rootNode: any) => {
+        // Position root node at a good starting point
+        rootNode.location = new go.Point(100, 100);
+      });
+    }
+  }
+
+  private ensureNoOverlaps(): void {
+    if (!this.diagram) return;
+
+    // Check for overlapping nodes and adjust if necessary
+    const nodes = this.diagram.nodes;
+    const nodeArray: any[] = [];
+
+    nodes.each((node: any) => {
+      nodeArray.push(node);
+    });
+
+    // Simple overlap detection and resolution
+    for (let i = 0; i < nodeArray.length; i++) {
+      for (let j = i + 1; j < nodeArray.length; j++) {
+        const node1 = nodeArray[i];
+        const node2 = nodeArray[j];
+
+        if (this.nodesOverlap(node1, node2)) {
+          // If nodes overlap, trigger a layout refresh
+          this.diagram.layoutDiagram(false);
+          break;
+        }
+      }
+    }
+  }
+
+  private nodesOverlap(node1: any, node2: any): boolean {
+    const bounds1 = node1.actualBounds;
+    const bounds2 = node2.actualBounds;
+
+    return bounds1.intersectsRect(bounds2);
   }
 
   private resetDiagram(): void {

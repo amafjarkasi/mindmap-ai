@@ -244,6 +244,12 @@ describe('MindMapGenerator', () => {
       generator['currentMindMapId'] = 'test-mindmap-id';
       generator['autoSaveEnabled'] = true;
 
+      // Mock the extractMindMapDataFromDiagram method
+      jest.spyOn(generator as any, 'extractMindMapDataFromDiagram').mockReturnValue({
+        title: 'Updated Mind Map',
+        nodes: mockMindMapData.nodes
+      });
+
       // Trigger auto-save
       await generator['autoSaveMindMap']();
 
@@ -334,6 +340,15 @@ describe('MindMapGenerator', () => {
       generator['currentMindMap'] = mockMindMapData;
       generator['currentMindMapId'] = 'existing-id';
 
+      // Mock the extractMindMapDataFromDiagram method
+      jest.spyOn(generator as any, 'extractMindMapDataFromDiagram').mockReturnValue({
+        title: 'Updated Mind Map',
+        nodes: mockMindMapData.nodes
+      });
+
+      // Mock showSuccess method
+      jest.spyOn(generator as any, 'showSuccess').mockImplementation(() => {});
+
       await generator['saveMindMap']();
 
       expect(mockStorageService.updateMindMap).toHaveBeenCalledWith(
@@ -345,6 +360,18 @@ describe('MindMapGenerator', () => {
     it('should save new mind map', async () => {
       generator['currentMindMap'] = mockMindMapData;
       generator['currentMindMapId'] = null;
+
+      // Mock the extractMindMapDataFromDiagram method
+      jest.spyOn(generator as any, 'extractMindMapDataFromDiagram').mockReturnValue({
+        title: 'New Mind Map',
+        nodes: mockMindMapData.nodes
+      });
+
+      // Mock showSuccess method
+      jest.spyOn(generator as any, 'showSuccess').mockImplementation(() => {});
+
+      // Mock saveMindMap to return an ID
+      mockStorageService.saveMindMap.mockResolvedValue('new-mindmap-id');
 
       await generator['saveMindMap']();
 

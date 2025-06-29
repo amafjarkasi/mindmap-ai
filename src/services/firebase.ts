@@ -3,16 +3,17 @@ import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
 import { getAnalytics } from 'firebase/analytics';
+import { getEnvVar, isProd, isDev } from '../utils/env';
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "demo-api-key",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "mindmap-ai-demo.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "mindmap-ai-demo",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "mindmap-ai-demo.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789:web:abcdef123456",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-ABCDEF123456"
+  apiKey: getEnvVar('VITE_FIREBASE_API_KEY', "demo-api-key"),
+  authDomain: getEnvVar('VITE_FIREBASE_AUTH_DOMAIN', "mindmap-ai-demo.firebaseapp.com"),
+  projectId: getEnvVar('VITE_FIREBASE_PROJECT_ID', "mindmap-ai-demo"),
+  storageBucket: getEnvVar('VITE_FIREBASE_STORAGE_BUCKET', "mindmap-ai-demo.appspot.com"),
+  messagingSenderId: getEnvVar('VITE_FIREBASE_MESSAGING_SENDER_ID', "123456789"),
+  appId: getEnvVar('VITE_FIREBASE_APP_ID', "1:123456789:web:abcdef123456"),
+  measurementId: getEnvVar('VITE_FIREBASE_MEASUREMENT_ID', "G-ABCDEF123456")
 };
 
 // Initialize Firebase
@@ -24,12 +25,12 @@ export const db = getFirestore(app);
 export const storage = getStorage(app);
 
 // Initialize Analytics only in production
-export const analytics = typeof window !== 'undefined' && import.meta.env.PROD 
-  ? getAnalytics(app) 
+export const analytics = typeof window !== 'undefined' && isProd()
+  ? getAnalytics(app)
   : null;
 
 // Connect to emulators in development
-if (import.meta.env.DEV && typeof window !== 'undefined') {
+if (isDev() && typeof window !== 'undefined') {
   try {
     // Only connect if not already connected
     if (!auth.config.emulator) {

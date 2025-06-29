@@ -1,5 +1,5 @@
 module.exports = {
-  preset: 'ts-jest',
+  preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'jsdom',
   roots: ['<rootDir>/src', '<rootDir>/tests'],
   testMatch: [
@@ -7,7 +7,15 @@ module.exports = {
     '**/*.(test|spec).+(ts|tsx|js)'
   ],
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest'
+    '^.+\\.(ts|tsx)$': ['ts-jest', {
+      useESM: true,
+      tsconfig: {
+        esModuleInterop: true,
+        allowSyntheticDefaultImports: true,
+        module: 'ESNext',
+        target: 'ES2020'
+      }
+    }]
   },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
@@ -18,7 +26,7 @@ module.exports = {
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@components/(.*)$': '<rootDir>/src/components/$1',
     '^@services/(.*)$': '<rootDir>/src/services/$1',
@@ -26,5 +34,9 @@ module.exports = {
     '^@types/(.*)$': '<rootDir>/src/types/$1'
   },
   testTimeout: 10000,
-  verbose: true
+  verbose: true,
+  extensionsToTreatAsEsm: ['.ts'],
+  transformIgnorePatterns: [
+    'node_modules/(?!(firebase|@firebase)/)'
+  ]
 };

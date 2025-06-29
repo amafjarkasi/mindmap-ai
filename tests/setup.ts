@@ -5,7 +5,19 @@ jest.mock('../src/services/firebase', () => ({
   auth: {
     currentUser: null,
     onAuthStateChanged: jest.fn(),
-    signInWithEmailAndPassword: jest.fn(),
+    signInWithEmailAndPassword: jest.fn().mockImplementation((email, password) => {
+      if (email === 'nonexistent@example.com') {
+        const error = new Error('Firebase: Error (auth/user-not-found).');
+        (error as any).code = 'auth/user-not-found';
+        return Promise.reject(error);
+      }
+      if (email === 'invalid@example.com') {
+        const error = new Error('Firebase: Error (auth/invalid-email).');
+        (error as any).code = 'auth/invalid-email';
+        return Promise.reject(error);
+      }
+      return Promise.resolve({ uid: 'test-uid', email });
+    }),
     createUserWithEmailAndPassword: jest.fn(),
     signOut: jest.fn(),
     sendPasswordResetEmail: jest.fn(),
@@ -35,12 +47,24 @@ jest.mock('../src/services/firebase', () => ({
 }));
 
 // Mock GoJS
+const mockGoJSObject = jest.fn().mockReturnValue({});
+
 (global as any).go = {
   GraphObject: {
-    make: jest.fn()
+    make: mockGoJSObject
   },
   Diagram: jest.fn().mockImplementation(() => ({
-    model: null,
+    model: {
+      nodeDataArray: [],
+      addNodeData: jest.fn(),
+      setDataProperty: jest.fn(),
+      findNodeDataForKey: jest.fn().mockImplementation((key) => {
+        if (key === 'root') {
+          return { key: 'root', text: 'Root Node', level: 0 };
+        }
+        return { key, text: `Node ${key}`, level: 1 };
+      })
+    },
     layoutDiagram: jest.fn(),
     zoomToFit: jest.fn(),
     centerRect: jest.fn(),
@@ -52,35 +76,54 @@ jest.mock('../src/services/firebase', () => ({
     select: jest.fn(),
     findNodeForKey: jest.fn(),
     findNodeDataForKey: jest.fn(),
-    makeSvg: jest.fn()
+    makeSvg: jest.fn(),
+    nodeTemplate: null,
+    linkTemplate: null,
+    layout: null
   })),
   TreeModel: jest.fn().mockImplementation((data) => ({
     nodeDataArray: data || [],
     addNodeData: jest.fn(),
     setDataProperty: jest.fn(),
-    findNodeDataForKey: jest.fn()
+    findNodeDataForKey: jest.fn().mockImplementation((key) => {
+      // Return a mock node for testing
+      if (key === 'root') {
+        return { key: 'root', text: 'Root Node', level: 0 };
+      }
+      return { key, text: `Node ${key}`, level: 1 };
+    })
   })),
-  TreeLayout: {
+  TreeLayout: jest.fn().mockImplementation(() => ({
     ArrangementVertical: 'vertical',
     CompactionNone: 'none',
     SortingAscending: 'asc'
-  },
-  Node: jest.fn(),
-  Shape: jest.fn(),
-  TextBlock: jest.fn(),
-  Panel: jest.fn(),
-  Link: jest.fn(),
+  })),
+  Binding: jest.fn().mockImplementation((property, source) => ({
+    property,
+    source,
+    converter: null
+  })),
+  Node: jest.fn().mockReturnValue({}),
+  Shape: jest.fn().mockReturnValue({}),
+  TextBlock: jest.fn().mockReturnValue({}),
+  Panel: jest.fn().mockReturnValue({}),
+  Link: jest.fn().mockReturnValue({}),
   Spot: {
     Center: 'center',
     TopRight: 'topright',
     RightSide: 'rightside',
     LeftSide: 'leftside'
   },
-  Size: jest.fn(),
+  Size: jest.fn().mockReturnValue({}),
   ToolManager: {
     WheelZoom: 'wheelzoom'
-  }
+  },
+  Margin: jest.fn().mockReturnValue({}),
+  Brush: jest.fn().mockReturnValue({})
 };
+
+// Mock the $ function used by GoJS
+(global as any).$ = mockGoJSObject;
 
 // Mock localStorage
 const localStorageMock = {
@@ -166,6 +209,54 @@ document.body.innerHTML = `
 `;
 
 // Mock environment variables
+process.env.NODE_ENV = 'test';
 process.env.VITE_FIREBASE_API_KEY = 'test-api-key';
 process.env.VITE_FIREBASE_PROJECT_ID = 'test-project';
 process.env.VITE_OPENAI_API_KEY = 'test-openai-key';
+process.env.VITE_TAVILY_API_KEY = 'test-tavily-key';
+process.env.VITE_ANTHROPIC_API_KEY = 'test-anthropic-key';
+
+// Mock import.meta.env
+Object.defineProperty(globalThis, 'import', {
+  value: {
+    meta: {
+      env: {
+        VITE_FIREBASE_API_KEY: 'test-api-key',
+        VITE_FIREBASE_AUTH_DOMAIN: 'test-project.firebaseapp.com',
+        VITE_FIREBASE_PROJECT_ID: 'test-project',
+        VITE_FIREBASE_STORAGE_BUCKET: 'test-project.appspot.com',
+        VITE_FIREBASE_MESSAGING_SENDER_ID: '123456789',
+        VITE_FIREBASE_APP_ID: 'test-app-id',
+        VITE_OPENAI_API_KEY: 'test-openai-key',
+        VITE_TAVILY_API_KEY: 'test-tavily-key',
+        VITE_ANTHROPIC_API_KEY: 'test-anthropic-key',
+        MODE: 'test',
+        DEV: false,
+        PROD: false
+      }
+    }
+  }
+});
+
+// Mock Response for Firebase
+global.Response = class Response {
+  constructor(body?: any, init?: ResponseInit) {
+    this.body = body;
+    this.status = init?.status || 200;
+    this.statusText = init?.statusText || 'OK';
+    this.ok = this.status >= 200 && this.status < 300;
+  }
+  body: any;
+  status: number;
+  statusText: string;
+  ok: boolean;
+  headers = new Map();
+
+  json() {
+    return Promise.resolve(this.body);
+  }
+
+  text() {
+    return Promise.resolve(String(this.body));
+  }
+};

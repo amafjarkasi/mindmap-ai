@@ -17,8 +17,11 @@
             padding: 2rem;
             max-width: 1400px;
             margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        
+
         .demo-section {
             margin-bottom: 4rem;
             background: rgba(255, 255, 255, 0.98);
@@ -27,6 +30,11 @@
             backdrop-filter: blur(20px);
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         
         .demo-header {
@@ -35,6 +43,7 @@
             align-items: flex-start;
             margin-bottom: 2rem;
             gap: 2rem;
+            width: 100%;
         }
         
         .demo-title-section {
@@ -200,29 +209,29 @@
             overflow: hidden;
         }
         
-        .demo-mindmap {
-            height: 400px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            background: #f8fafc;
-            margin-top: 1rem;
-        }
-        
         .demo-description {
             color: #4a5568;
             margin-bottom: 2rem;
             line-height: 1.7;
             font-size: 1.1rem;
             font-weight: 400;
+            text-align: center;
+            max-width: 800px;
         }
-        
+
         .demo-mindmap {
             height: 450px;
+            width: 100%;
+            max-width: 1000px;
             border: 2px solid #e2e8f0;
             border-radius: 12px;
             background: #ffffff;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             overflow: hidden;
+            margin: 1rem auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .back-link {
@@ -254,27 +263,49 @@
             .demo-container {
                 padding: 1rem;
             }
-            
+
             .demo-section {
                 padding: 2rem;
                 margin-bottom: 2rem;
+                max-width: 100%;
             }
-            
+
             .demo-header {
                 flex-direction: column;
                 gap: 1rem;
+                text-align: center;
             }
-            
+
             .demo-title {
                 font-size: 1.5rem;
             }
-            
+
             .popout-btn {
-                align-self: flex-start;
+                align-self: center;
             }
-            
+
             .demo-mindmap {
                 height: 350px;
+                max-width: 100%;
+            }
+
+            .demo-description {
+                text-align: center;
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .demo-section {
+                padding: 1.5rem;
+            }
+
+            .demo-mindmap {
+                height: 300px;
+            }
+
+            .demo-title {
+                font-size: 1.25rem;
             }
         }
         
@@ -324,7 +355,7 @@
         </header>
         
         <div class="demo-container">
-            <a href="index.html" class="back-link">← Back to Generator</a>
+            <a href="/" class="back-link">← Back to Generator</a>
             
             <div class="demo-section">
                 <div class="demo-header">
@@ -421,12 +452,14 @@
                     arrangement: go.TreeLayout.ArrangementVertical,
                     angle: 0,
                     compaction: go.TreeLayout.CompactionNone,
-                    layerSpacing: 80,
-                    layerSpacingParentOverlap: 1,
-                    nodeSpacing: 25,
+                    layerSpacing: 120,  // Increased horizontal spacing
+                    layerSpacingParentOverlap: 0.5,  // Reduced overlap
+                    nodeSpacing: 50,  // Increased vertical spacing
                     sorting: go.TreeLayout.SortingAscending,
                     setsPortSpot: false,
-                    setsChildPortSpot: false
+                    setsChildPortSpot: false,
+                    breadthLimit: 0,  // No limit on breadth
+                    rowSpacing: 30   // Extra spacing between rows when breadthLimit is used
                 }),
                 "animationManager.isEnabled": false,
                 allowCopy: false,
@@ -435,7 +468,10 @@
                 allowSelect: true,
                 hasHorizontalScrollbar: true,
                 hasVerticalScrollbar: true,
-                "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom
+                "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom,
+                contentAlignment: go.Spot.Center,
+                "documentBounds": new go.Rect(-400, -300, 800, 600),
+                "initialContentAlignment": go.Spot.Center
             });
 
             // Node template
@@ -504,9 +540,10 @@
                 );
 
             diagram.model = new go.TreeModel(data);
-            
+
             setTimeout(() => {
                 diagram.zoomToFit();
+                diagram.centerRect(diagram.documentBounds);
             }, 100);
         }
 
@@ -746,7 +783,9 @@
                 "toolManager.mouseWheelBehavior": go.ToolManager.WheelZoom,
                 padding: 20,
                 "grid.visible": false,
-                "undoManager.isEnabled": false
+                "undoManager.isEnabled": false,
+                contentAlignment: go.Spot.Center,
+                "initialContentAlignment": go.Spot.Center
             });
 
             // Enhanced node template for modal with hover effects and detailed info

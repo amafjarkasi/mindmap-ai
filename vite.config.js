@@ -21,7 +21,23 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: true
+    open: true,
+    hmr: {
+      // Use a high port number that's less likely to be in use
+      port: 24680
+    },
+    watch: {
+      usePolling: false
+    },
+    // Add host configuration for better network access
+    host: true,
+    // Improve WebSocket connection stability
+    ws: {
+      // Add WebSocket configuration for better error handling
+      options: {
+        skipUTF8Validation: true
+      }
+    }
   },
   resolve: {
     alias: {
